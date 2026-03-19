@@ -82,7 +82,7 @@ describe("PortalHeader", () => {
       'a[href="/portal/messages"]'
     );
     expect(messagesLink).not.toBeNull();
-    expect(messagesLink?.className).toContain("bg-primary");
+    expect(messagesLink?.className).toContain("bg-primary/10");
   });
 
   it("includes correct portal fieldnames for both locales", () => {

@@ -34,7 +34,7 @@ export default function PortalHeader() {
             </span>
           </Link>
 
-          <nav className="hidden md:flex md:items-center md:gap-1" aria-label={t.portal_name}>
+          <nav className="hidden md:flex md:items-center md:gap-1" aria-label={t.portal_nav_label}>
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname.startsWith(item.href);
@@ -72,7 +72,7 @@ export default function PortalHeader() {
       </div>
 
       {mobileMenuOpen && (
-        <nav className="border-t border-border md:hidden" aria-label={t.portal_name}>
+        <nav className="border-t border-border md:hidden" aria-label={t.portal_nav_label}>
           <div className="mx-auto max-w-4xl px-4 py-2">
             {navItems.map((item) => {
               const Icon = item.icon;
