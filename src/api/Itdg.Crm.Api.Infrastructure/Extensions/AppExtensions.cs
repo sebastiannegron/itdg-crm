@@ -2,6 +2,11 @@ namespace Itdg.Crm.Api.Infrastructure.Extensions;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
+using Itdg.Crm.Api.Application.CommandHandlers;
+using Itdg.Crm.Api.Application.Commands;
+using Itdg.Crm.Api.Application.Dtos;
+using Itdg.Crm.Api.Application.Queries;
+using Itdg.Crm.Api.Application.QueryHandlers;
 using Itdg.Crm.Api.Infrastructure.Data;
 using Itdg.Crm.Api.Infrastructure.Interceptors;
 using Itdg.Crm.Api.Infrastructure.Data.Interceptors;
@@ -54,6 +59,15 @@ public static class AppExtensions
         services.AddScoped<ITemplateRepository, TemplateRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+
+        // Command handlers
+        services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
+        services.AddScoped<ICommandHandler<UpdateClient>, UpdateClientHandler>();
+        services.AddScoped<ICommandHandler<DeleteClient>, DeleteClientHandler>();
+
+        // Query handlers
+        services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
+        services.AddScoped<IQueryHandler<GetClients, PaginatedResultDto<ClientDto>>, GetClientsHandler>();
 
         return services;
     }
