@@ -7,7 +7,6 @@ import {
   FileText,
   MessageSquare,
   Settings,
-  Bell,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
@@ -17,7 +16,10 @@ import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import { Button } from "@/app/_components/ui/button";
-import { Badge } from "@/app/_components/ui/badge";
+import {
+  NotificationPanel,
+  type NotificationItem,
+} from "@/app/_components/NotificationPanel";
 import {
   Sheet,
   SheetContent,
@@ -168,8 +170,12 @@ export default function AdminSidebar({
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const labels = fieldnames[locale];
-  const notificationCount = 0;
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -218,20 +224,15 @@ export default function AdminSidebar({
           </span>
 
           <div className="ml-auto flex items-center gap-2">
-            {/* Notification bell */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              aria-label={labels.nav_notifications}
-            >
-              <Bell className="h-5 w-5" />
-              {notificationCount > 0 && (
-                <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs">
-                  {notificationCount}
-                </Badge>
-              )}
-            </Button>
+            {/* Notification panel */}
+            <NotificationPanel
+              notifications={notifications}
+              onMarkAllRead={handleMarkAllRead}
+              bellLabel={labels.nav_notifications}
+              title={labels.nav_notifications}
+              markAllReadLabel={labels.notifications_mark_all_read}
+              emptyLabel={labels.notifications_empty}
+            />
           </div>
         </header>
 
