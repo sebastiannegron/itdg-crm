@@ -48,7 +48,7 @@ public class AuditSaveChangesInterceptorTests
         _tenantProvider.GetTenantId().Returns(_testTenantId);
     }
 
-    private TestDbContext CreateContext()
+    private TestDbContext CreateContext(string? databaseName = null)
     {
         var interceptor = new AuditSaveChangesInterceptor(
             _httpContextAccessor,
@@ -56,7 +56,7 @@ public class AuditSaveChangesInterceptorTests
             _logger);
 
         var options = new DbContextOptionsBuilder<TestDbContext>()
-            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .UseInMemoryDatabase(databaseName: databaseName ?? Guid.NewGuid().ToString())
             .AddInterceptors(interceptor)
             .Options;
 
@@ -94,28 +94,30 @@ public class AuditSaveChangesInterceptorTests
     [Fact]
     public async Task SavingChanges_CreatesAuditLog_WhenEntityModified()
     {
-        // Arrange
-        using var context = CreateContext();
-        var entity = new TestTenantEntity
+        // Arrange — seed entity using a shared in-memory database
+        var dbName = Guid.NewGuid().ToString();
+        var entityId = Guid.NewGuid();
+
+        using (var seedContext = CreateContext(dbName))
         {
-            Id = Guid.NewGuid(),
-            TenantId = _testTenantId,
-            Name = "Original"
-        };
-        context.TestEntities.Add(entity);
+            var entity = new TestTenantEntity
+            {
+                Id = entityId,
+                TenantId = _testTenantId,
+                Name = "Original"
+            };
+            seedContext.TestEntities.Add(entity);
+            await seedContext.SaveChangesAsync();
+        }
+
+        // Act — modify entity in a fresh context so only the update is tracked
+        using var context = CreateContext(dbName);
+        var trackedEntity = await context.TestEntities.FindAsync(entityId);
+        trackedEntity!.Name = "Updated";
         await context.SaveChangesAsync();
 
-        // Clear existing audit logs from add operation
-        context.AuditLogs.RemoveRange(context.AuditLogs);
-        await context.SaveChangesAsync(CancellationToken.None);
-
-        // Act
-        entity.Name = "Updated";
-        context.TestEntities.Update(entity);
-        await context.SaveChangesAsync();
-
-        // Assert
-        var auditLogs = context.AuditLogs.ToList();
+        // Assert — only the modification audit log from this context
+        var auditLogs = context.AuditLogs.Where(a => a.Action == "Modified").ToList();
         auditLogs.Should().HaveCount(1);
         auditLogs[0].Action.Should().Be("Modified");
         auditLogs[0].OldValues.Should().NotBeNull();
@@ -127,27 +129,30 @@ public class AuditSaveChangesInterceptorTests
     [Fact]
     public async Task SavingChanges_CreatesAuditLog_WhenEntityDeleted()
     {
-        // Arrange
-        using var context = CreateContext();
-        var entity = new TestTenantEntity
+        // Arrange — seed entity using a shared in-memory database
+        var dbName = Guid.NewGuid().ToString();
+        var entityId = Guid.NewGuid();
+
+        using (var seedContext = CreateContext(dbName))
         {
-            Id = Guid.NewGuid(),
-            TenantId = _testTenantId,
-            Name = "To Delete"
-        };
-        context.TestEntities.Add(entity);
+            var entity = new TestTenantEntity
+            {
+                Id = entityId,
+                TenantId = _testTenantId,
+                Name = "To Delete"
+            };
+            seedContext.TestEntities.Add(entity);
+            await seedContext.SaveChangesAsync();
+        }
+
+        // Act — delete entity in a fresh context so only the delete is tracked
+        using var context = CreateContext(dbName);
+        var trackedEntity = await context.TestEntities.FindAsync(entityId);
+        context.TestEntities.Remove(trackedEntity!);
         await context.SaveChangesAsync();
 
-        // Clear existing audit logs from add operation
-        context.AuditLogs.RemoveRange(context.AuditLogs);
-        await context.SaveChangesAsync(CancellationToken.None);
-
-        // Act
-        context.TestEntities.Remove(entity);
-        await context.SaveChangesAsync();
-
-        // Assert
-        var auditLogs = context.AuditLogs.ToList();
+        // Assert — only the deletion audit log from this context
+        var auditLogs = context.AuditLogs.Where(a => a.Action == "Deleted").ToList();
         auditLogs.Should().HaveCount(1);
         auditLogs[0].Action.Should().Be("Deleted");
         auditLogs[0].OldValues.Should().NotBeNull();

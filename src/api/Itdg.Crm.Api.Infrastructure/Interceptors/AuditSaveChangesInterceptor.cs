@@ -68,7 +68,7 @@ public class AuditSaveChangesInterceptor : SaveChangesInterceptor
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 UserId = userId,
-                EntityType = entry.Entity.GetType().Name,
+                EntityType = entry.Metadata.ClrType.Name,
                 EntityId = entry.Entity.Id,
                 Action = entry.State.ToString(),
                 OldValues = GetOldValues(entry),

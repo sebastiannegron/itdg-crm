@@ -18,6 +18,7 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
             .IsRequired()
             .HasMaxLength(50);
 
+        // 45 chars accommodates IPv6 addresses (max 39 chars) with zone ID
         builder.Property(a => a.IpAddress)
             .HasMaxLength(45);
 
