@@ -17,23 +17,13 @@ const dotColors: Record<NotificationType, string> = {
   system: "bg-muted-foreground",
 };
 
-const dotColors: Record<NotificationType, string> = {
-  doc: "bg-info",
-  alert: "bg-destructive",
-  payment: "bg-destructive",
-  task: "bg-accent",
-  msg: "bg-[#7C3AED]",
-};
-
 export function NotificationDot({
   type,
   className,
 }: {
-  type: string;
+  type: NotificationType;
   className?: string;
 }) {
-  const color = dotColors[type as NotificationType] ?? "bg-muted-foreground";
-
   return (
     <span
       className={cn(
