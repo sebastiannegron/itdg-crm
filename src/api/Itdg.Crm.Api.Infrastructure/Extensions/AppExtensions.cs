@@ -60,12 +60,17 @@ public static class AppExtensions
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
 
-        // Command Handlers
+        // Command handlers
+        services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
+        services.AddScoped<ICommandHandler<UpdateClient>, UpdateClientHandler>();
+        services.AddScoped<ICommandHandler<DeleteClient>, DeleteClientHandler>();
         services.AddScoped<ICommandHandler<CreateTemplate>, CreateTemplateHandler>();
         services.AddScoped<ICommandHandler<UpdateTemplate>, UpdateTemplateHandler>();
         services.AddScoped<ICommandHandler<RetireTemplate>, RetireTemplateHandler>();
-
-        // Query Handlers
+      
+        // Query handlers
+        services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
+        services.AddScoped<IQueryHandler<GetClients, PaginatedResultDto<ClientDto>>, GetClientsHandler>();
         services.AddScoped<IQueryHandler<GetTemplates, IEnumerable<CommunicationTemplateDto>>, GetTemplatesHandler>();
         services.AddScoped<IQueryHandler<GetTemplateById, CommunicationTemplateDto>, GetTemplateByIdHandler>();
 

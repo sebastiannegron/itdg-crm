@@ -1,7 +1,9 @@
 namespace Itdg.Crm.Api.Test.Repositories;
 
+using Itdg.Crm.Api.Application.Abstractions;
 using Itdg.Crm.Api.Domain.Entities;
 using Itdg.Crm.Api.Domain.GeneralConstants;
+using Itdg.Crm.Api.Infrastructure.Data;
 using Itdg.Crm.Api.Infrastructure.Repositories;
 
 public class ClientRepositoryTests
@@ -16,6 +18,14 @@ public class ClientRepositoryTests
         public DbSet<ClientTier> ClientTiers => Set<ClientTier>();
     }
 
+    private class TestCrmDbContext : CrmDbContext
+    {
+        public TestCrmDbContext(DbContextOptions<TestCrmDbContext> options, ITenantProvider tenantProvider)
+            : base(options, tenantProvider)
+        {
+        }
+    }
+
     private TestDbContext CreateInMemoryContext()
     {
         var options = new DbContextOptionsBuilder<TestDbContext>()
@@ -23,6 +33,18 @@ public class ClientRepositoryTests
             .Options;
 
         return new TestDbContext(options);
+    }
+
+    private static TestCrmDbContext CreateCrmContext(Guid tenantId, string databaseName)
+    {
+        var tenantProvider = Substitute.For<ITenantProvider>();
+        tenantProvider.GetTenantId().Returns(tenantId);
+
+        var options = new DbContextOptionsBuilder<TestCrmDbContext>()
+            .UseInMemoryDatabase(databaseName)
+            .Options;
+
+        return new TestCrmDbContext(options, tenantProvider);
     }
 
     private class TestClientRepository : GenericRepository<Client>
@@ -254,5 +276,192 @@ public class ClientRepositoryTests
         tier.Name.Should().Be("Premium");
         tier.SortOrder.Should().Be(1);
         tier.TenantId.Should().NotBeEmpty();
+    }
+
+    [Fact]
+    public async Task GetByIdWithTierAsync_ReturnsClientWithTier_WhenClientExists()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        using (var seedContext = CreateCrmContext(tenantId, dbName))
+        {
+            var tier = new ClientTier { Id = Guid.NewGuid(), Name = "Premium", SortOrder = 1, TenantId = tenantId };
+            await seedContext.ClientTiers.AddAsync(tier);
+            var client = new Client
+            {
+                Id = Guid.NewGuid(),
+                Name = "Test Client",
+                TierId = tier.Id,
+                Status = ClientStatus.Active,
+                TenantId = tenantId
+            };
+            await seedContext.Clients.AddAsync(client);
+            await seedContext.SaveChangesAsync();
+
+            // Act
+            using var queryContext = CreateCrmContext(tenantId, dbName);
+            var repository = new ClientRepository(queryContext);
+            var result = await repository.GetByIdWithTierAsync(client.Id);
+
+            // Assert
+            result.Should().NotBeNull();
+            result!.Name.Should().Be("Test Client");
+            result.Tier.Should().NotBeNull();
+            result.Tier!.Name.Should().Be("Premium");
+        }
+    }
+
+    [Fact]
+    public async Task GetByIdWithTierAsync_ReturnsNull_WhenClientDoesNotExist()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        using var context = CreateCrmContext(tenantId, dbName);
+        var repository = new ClientRepository(context);
+
+        // Act
+        var result = await repository.GetByIdWithTierAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_ReturnsPaginatedResults()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        using (var seedContext = CreateCrmContext(tenantId, dbName))
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                await seedContext.Clients.AddAsync(new Client
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"Client {i}",
+                    Status = ClientStatus.Active,
+                    TenantId = tenantId
+                });
+            }
+            await seedContext.SaveChangesAsync();
+        }
+
+        // Act
+        using var queryContext = CreateCrmContext(tenantId, dbName);
+        var repository = new ClientRepository(queryContext);
+        var (items, totalCount) = await repository.GetPagedAsync(1, 3);
+
+        // Assert
+        items.Should().HaveCount(3);
+        totalCount.Should().Be(5);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_FiltersByStatus()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        using (var seedContext = CreateCrmContext(tenantId, dbName))
+        {
+            await seedContext.Clients.AddRangeAsync(
+                new Client { Id = Guid.NewGuid(), Name = "Active 1", Status = ClientStatus.Active, TenantId = tenantId },
+                new Client { Id = Guid.NewGuid(), Name = "Active 2", Status = ClientStatus.Active, TenantId = tenantId },
+                new Client { Id = Guid.NewGuid(), Name = "Inactive 1", Status = ClientStatus.Inactive, TenantId = tenantId }
+            );
+            await seedContext.SaveChangesAsync();
+        }
+
+        // Act
+        using var queryContext = CreateCrmContext(tenantId, dbName);
+        var repository = new ClientRepository(queryContext);
+        var (items, totalCount) = await repository.GetPagedAsync(1, 20, status: ClientStatus.Active);
+
+        // Assert
+        items.Should().HaveCount(2);
+        totalCount.Should().Be(2);
+        items.Should().OnlyContain(c => c.Status == ClientStatus.Active);
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_FiltersByTierId()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+        var tierId = Guid.NewGuid();
+
+        using (var seedContext = CreateCrmContext(tenantId, dbName))
+        {
+            var tier = new ClientTier { Id = tierId, Name = "Premium", SortOrder = 1, TenantId = tenantId };
+            await seedContext.ClientTiers.AddAsync(tier);
+            await seedContext.Clients.AddRangeAsync(
+                new Client { Id = Guid.NewGuid(), Name = "With Tier", TierId = tierId, Status = ClientStatus.Active, TenantId = tenantId },
+                new Client { Id = Guid.NewGuid(), Name = "No Tier", TierId = null, Status = ClientStatus.Active, TenantId = tenantId }
+            );
+            await seedContext.SaveChangesAsync();
+        }
+
+        // Act
+        using var queryContext = CreateCrmContext(tenantId, dbName);
+        var repository = new ClientRepository(queryContext);
+        var (items, totalCount) = await repository.GetPagedAsync(1, 20, tierId: tierId);
+
+        // Assert
+        items.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        items.First().Name.Should().Be("With Tier");
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_FiltersBySearch()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        using (var seedContext = CreateCrmContext(tenantId, dbName))
+        {
+            await seedContext.Clients.AddRangeAsync(
+                new Client { Id = Guid.NewGuid(), Name = "Acme Corp", ContactEmail = "info@acme.com", Status = ClientStatus.Active, TenantId = tenantId },
+                new Client { Id = Guid.NewGuid(), Name = "Beta Inc", ContactEmail = "info@beta.com", Status = ClientStatus.Active, TenantId = tenantId }
+            );
+            await seedContext.SaveChangesAsync();
+        }
+
+        // Act
+        using var queryContext = CreateCrmContext(tenantId, dbName);
+        var repository = new ClientRepository(queryContext);
+        var (items, totalCount) = await repository.GetPagedAsync(1, 20, search: "Acme");
+
+        // Assert
+        items.Should().HaveCount(1);
+        totalCount.Should().Be(1);
+        items.First().Name.Should().Be("Acme Corp");
+    }
+
+    [Fact]
+    public async Task GetPagedAsync_ReturnsEmpty_WhenNoMatchingClients()
+    {
+        // Arrange
+        var tenantId = Guid.NewGuid();
+        var dbName = Guid.NewGuid().ToString();
+
+        using var context = CreateCrmContext(tenantId, dbName);
+        var repository = new ClientRepository(context);
+
+        // Act
+        var (items, totalCount) = await repository.GetPagedAsync(1, 20);
+
+        // Assert
+        items.Should().BeEmpty();
+        totalCount.Should().Be(0);
     }
 }
