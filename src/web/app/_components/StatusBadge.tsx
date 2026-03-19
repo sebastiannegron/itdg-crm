@@ -1,26 +1,37 @@
-import { Badge } from "@/app/_components/ui/badge";
 import { cn } from "@/lib/utils";
 
-interface StatusBadgeProps {
-  status: string;
-  className?: string;
-}
+type ClientStatus = "Active" | "Pending Docs" | "Awaiting Payment";
+type TaskStatus = "To Do" | "In Progress" | "Review" | "Done";
+type Status = ClientStatus | TaskStatus;
 
-const statusColorMap: Record<string, string> = {
-  active: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "pending docs": "bg-amber-100 text-amber-800 border-amber-200",
-  "awaiting payment": "bg-red-100 text-red-800 border-red-200",
-  completed: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  "in progress": "bg-blue-100 text-blue-800 border-blue-200",
-  "not started": "bg-gray-100 text-gray-800 border-gray-200",
-  overdue: "bg-red-100 text-red-800 border-red-200",
-  cancelled: "bg-gray-100 text-gray-500 border-gray-200",
+const statusStyles: Record<Status, string> = {
+  Active: "text-[#065F46] bg-[#ECFDF5]",
+  "Pending Docs": "text-[#92400E] bg-[#FFFBEB]",
+  "Awaiting Payment": "text-[#991B1B] bg-[#FEF2F2]",
+  "To Do": "text-[#374151] bg-[#F9FAFB]",
+  "In Progress": "text-[#1E40AF] bg-[#EFF6FF]",
+  Review: "text-[#6D28D9] bg-[#F5F3FF]",
+  Done: "text-[#065F46] bg-[#ECFDF5]",
 };
 
-const defaultColor = "bg-gray-100 text-gray-800 border-gray-200";
+export function StatusBadge({
+  status,
+  className,
+}: {
+  status: string;
+  className?: string;
+}) {
+  const styles = statusStyles[status as Status] ?? statusStyles["To Do"];
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
-  const colorClasses = statusColorMap[status.toLowerCase()] ?? defaultColor;
-
-  return <Badge className={cn(colorClasses, className)}>{status}</Badge>;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold",
+        styles,
+        className
+      )}
+    >
+      {status}
+    </span>
+  );
 }

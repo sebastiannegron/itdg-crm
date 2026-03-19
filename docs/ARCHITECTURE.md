@@ -890,38 +890,45 @@ export async function createClient(formData: FormData) {
 
 ### Color Palette
 
-Built on shadcn/ui CSS variables in `tailwind.config.ts` and `globals.css`:
+R&A (Raposo & Associates) brand colors. Built on CSS variables in `globals.css`:
 
-| Token | Light Mode | Dark Mode | Usage |
+| Token | Light Mode | Usage |
+|---|---|---|
+| `--primary` | `#E85320` / `hsl(14, 80%, 49%)` | CTAs, active nav, accent — brand orange |
+| `--sidebar` | `#1a2744` / `hsl(220, 42%, 18%)` | Sidebar bg, headings — navy |
+| `--info` | `#0088C8` / `hsl(201, 100%, 39%)` | Info states, links — blue |
+| `--background` | `#F1F5F9` / `hsl(210, 40%, 96%)` | Page bg — slate-100 |
+| `--card` | `#FFFFFF` | Card surfaces |
+| `--border` | `#E5E7EB` | Borders, dividers |
+| `--foreground` | `#1a2744` | Body text — navy |
+| `--ring` | `#E85320` | Focus rings — matches primary |
+| `--accent` | `hsl(160, 60%, 40%)` | Success states, completed tasks — green |
+| `--destructive` | `hsl(0, 72%, 51%)` | Errors, failed payments — red |
+| `--warning` | `hsl(38, 92%, 50%)` | Deadline approaching, pending — amber |
+
+**Tier badge colors** (multi-part tokens for text/bg/border):
+
+| Tier | Text | Background | Border |
 |---|---|---|---|
-| `--primary` | `hsl(220, 70%, 45%)` | `hsl(220, 70%, 60%)` | Buttons, active nav, links — professional blue |
-| `--primary-foreground` | `hsl(0, 0%, 100%)` | `hsl(0, 0%, 100%)` | Text on primary backgrounds |
-| `--secondary` | `hsl(215, 20%, 95%)` | `hsl(215, 20%, 18%)` | Subtle backgrounds, secondary buttons |
-| `--accent` | `hsl(160, 60%, 40%)` | `hsl(160, 60%, 50%)` | Success states, positive metrics, completed tasks |
-| `--destructive` | `hsl(0, 72%, 51%)` | `hsl(0, 72%, 61%)` | Errors, failed payments, delete actions |
-| `--warning` | `hsl(38, 92%, 50%)` | `hsl(38, 92%, 60%)` | Deadline approaching, pending items, alerts |
-| `--muted` | `hsl(215, 16%, 93%)` | `hsl(215, 16%, 16%)` | Disabled elements, placeholder text |
-| `--background` | `hsl(0, 0%, 100%)` | `hsl(220, 15%, 10%)` | Page background |
-| `--card` | `hsl(0, 0%, 100%)` | `hsl(220, 15%, 13%)` | Card and widget surfaces |
-| `--border` | `hsl(215, 20%, 88%)` | `hsl(215, 20%, 22%)` | Borders, dividers |
-| `--ring` | `hsl(220, 70%, 45%)` | `hsl(220, 70%, 60%)` | Focus rings |
+| Tier 1 (High) | `#92400E` | `#FEF3C7` | `#FCD34D` (gold) |
+| Tier 2 (Medium) | `#1E40AF` | `#DBEAFE` | `#93C5FD` (blue) |
+| Tier 3 (Standard) | `#374151` | `#F3F4F6` | `#D1D5DB` (gray) |
 
-**Tier colors** (for client classification badges):
+**Status badge colors:**
 
-| Tier | Color | Token |
-|---|---|---|
-| Tier 1 (High) | Gold | `hsl(45, 93%, 47%)` |
-| Tier 2 (Medium) | Blue | `hsl(220, 70%, 55%)` |
-| Tier 3 (Standard) | Slate | `hsl(215, 16%, 55%)` |
+| Status | Text | Background | Usage |
+|---|---|---|---|
+| Active | `#065F46` | `#ECFDF5` | Active clients, completed tasks |
+| Pending Docs | `#92400E` | `#FFFBEB` | Awaiting client documents |
+| Awaiting Payment | `#991B1B` | `#FEF2F2` | Payment overdue |
+| To Do | `#374151` | `#F9FAFB` | Task not started |
+| In Progress | `#1E40AF` | `#EFF6FF` | Task in progress |
+| Review | `#6D28D9` | `#F5F3FF` | Task awaiting review |
+| Done | `#065F46` | `#ECFDF5` | Task completed |
 
-**Status colors:**
+**Badge components** (in `app/_components/`): `TierBadge`, `StatusBadge`, `NotificationDot`
 
-| Status | Color | Usage |
-|---|---|---|
-| Active | `--accent` (green) | Active clients, completed tasks |
-| Pending | `--warning` (amber) | Pending payments, in-progress tasks |
-| Overdue | `--destructive` (red) | Overdue tasks, failed transactions |
-| Inactive | `--muted` (gray) | Inactive clients, archived items |
+**Reference artifact:** `docs/ui-template.tsx` — single-file React prototype defining all screen layouts and visual patterns.
 
 ### Typography
 
@@ -966,22 +973,27 @@ Mobile-first approach using Tailwind defaults:
 ### Admin Layout (Mobile Responsive)
 
 ```
-Desktop (lg+):                         Mobile (<md):
-┌──────┬────────────────────────┐      ┌────────────────────────┐
-│      │  Header + Breadcrumbs  │      │ ☰ Header + Breadcrumbs │
-│ Side │────────────────────────│      │────────────────────────│
-│ bar  │                        │      │                        │
-│      │     Page Content       │      │     Page Content       │
-│ Nav  │                        │      │     (full width)       │
-│      │                        │      │                        │
-│      │                        │      │────────────────────────│
-└──────┴────────────────────────┘      │  ◆  ◆  ◆  ◆  Bottom  │
-                                       └────────────────────────┘
+Desktop (lg+):                    Tablet (md–lg):           Mobile (<md):
+┌─────────┬──────────────────┐   ┌────┬──────────────────┐  ┌────────────────────┐
+│  R&A    │  Header  🔔 👤  │   │ ⊞  │  Header  🔔 👤  │  │ R&A    🔔 👤      │
+│ CRM MVP │──────────────────│   │ 👥 │──────────────────│  │────────────────────│
+│─────────│                  │   │ 📄 │                  │  │                    │
+│ ⊞ Dash  │                  │   │ ✉  │  Page Content    │  │   Page Content     │
+│ 👥 Cli  │   Page Content   │   │ ✓  │                  │  │   (full width)     │
+│ 📄 Doc  │                  │   │    │                  │  │                    │
+│ ✉ Comms │                  │   │────│                  │  │────────────────────│
+│ ✓ Tasks │                  │   │ ⚙  │                  │  │ ⊞  👥 📄  ✉  ✓   │
+│─────────│                  │   └────┴──────────────────┘  └────────────────────┘
+│ ⚙ Set.  │                  │
+└─────────┴──────────────────┘
 ```
 
-- **Desktop**: Persistent sidebar (collapsible to icon-only)
-- **Tablet**: Sidebar collapses to hamburger overlay
-- **Mobile**: Bottom navigation bar with 4-5 primary destinations; hamburger menu for secondary items
+- **Desktop (lg+)**: 210px navy sidebar (not collapsible), R&A branding in orange + subtitle in muted white
+- **Tablet (md–lg)**: 52px icon-only navy sidebar (persistent, not hamburger overlay)
+- **Mobile (<md)**: 56px navy bottom nav bar with 5 primary destinations (Dashboard, Clients, Documents, Comms, Tasks)
+- **Nav items**: Dashboard, Clients, Documents, Communications, Tasks — Settings as gear icon in sidebar footer
+- **Active state**: Orange left border + `rgba(232,83,32,0.18)` background + white text
+- **Header**: 50px height, notification bell with unread badge, user avatar (navy bg, white initials)
 
 ### Client Portal Layout (Mobile Responsive)
 

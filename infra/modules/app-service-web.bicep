@@ -7,6 +7,15 @@ param location string
 @description('Application Insights connection string')
 param appInsightsConnectionString string
 
+@description('Backend API base URL')
+param apiBaseUrl string = ''
+
+@description('Entra ID client ID for MSAL.js')
+param entraIdClientId string = ''
+
+@description('Entra ID tenant ID')
+param entraIdTenantId string = subscription().tenantId
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${name}-plan'
   location: location
@@ -28,10 +37,24 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
     siteConfig: {
       linuxFxVersion: 'NODE|22-lts'
       alwaysOn: true
+      minTlsVersion: '1.2'
+      ftpsState: 'Disabled'
       appSettings: [
         {
           name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
           value: appInsightsConnectionString
+        }
+        {
+          name: 'API_BASE_URL'
+          value: apiBaseUrl
+        }
+        {
+          name: 'AZURE_AD_CLIENT_ID'
+          value: entraIdClientId
+        }
+        {
+          name: 'AZURE_AD_TENANT_ID'
+          value: entraIdTenantId
         }
       ]
     }
@@ -44,3 +67,4 @@ resource appService 'Microsoft.Web/sites@2023-12-01' = {
 
 output appServiceName string = appService.name
 output principalId string = appService.identity.principalId
+output defaultHostName string = appService.properties.defaultHostName

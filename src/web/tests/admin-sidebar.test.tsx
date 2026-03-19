@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock next-intl
@@ -51,6 +50,7 @@ describe("AdminSidebar", () => {
     expect(
       screen.getAllByText("Communications").length
     ).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Tasks").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
   });
 
@@ -71,8 +71,31 @@ describe("AdminSidebar", () => {
       </AdminSidebar>
     );
 
-    const brands = screen.getAllByText("ITDG");
+    const brands = screen.getAllByText("R&A");
     expect(brands.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders the brand subtitle", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    const subtitles = screen.getAllByText("Tax Consulting");
+    expect(subtitles.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders user avatar in header", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    const avatar = screen.getByLabelText("User avatar");
+    expect(avatar).toBeInTheDocument();
+    expect(avatar.textContent).toBe("RA");
   });
 
   it("renders the notification bell button", () => {
@@ -88,41 +111,15 @@ describe("AdminSidebar", () => {
     expect(bellButtons.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders collapse sidebar button", () => {
+  it("renders settings link in sidebar footer", () => {
     render(
       <AdminSidebar>
         <div>Content</div>
       </AdminSidebar>
     );
 
-    const collapseButtons = screen.getAllByRole("button", {
-      name: "Collapse sidebar",
-    });
-    expect(collapseButtons.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("toggles sidebar collapse state on button click", async () => {
-    const user = userEvent.setup();
-    render(
-      <AdminSidebar>
-        <div>Content</div>
-      </AdminSidebar>
-    );
-
-    // Initially should show "Collapse sidebar"
-    const collapseButtons = screen.getAllByRole("button", {
-      name: "Collapse sidebar",
-    });
-    expect(collapseButtons.length).toBeGreaterThanOrEqual(1);
-
-    // Click to collapse
-    await user.click(collapseButtons[0]);
-
-    // Should now show "Expand sidebar"
-    const expandButtons = screen.getAllByRole("button", {
-      name: "Expand sidebar",
-    });
-    expect(expandButtons.length).toBeGreaterThanOrEqual(1);
+    const settingsLinks = screen.getAllByText("Settings");
+    expect(settingsLinks.length).toBeGreaterThanOrEqual(1);
   });
 
   it("marks the active navigation link with aria-current", () => {
@@ -142,17 +139,6 @@ describe("AdminSidebar", () => {
       (link) => link.getAttribute("href") === "/clients"
     );
     expect(clientLinks.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it("renders hamburger menu button for tablet view", () => {
-    render(
-      <AdminSidebar>
-        <div>Content</div>
-      </AdminSidebar>
-    );
-
-    const menuButtons = screen.getAllByRole("button", { name: "Open menu" });
-    expect(menuButtons.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders a sticky header", () => {
@@ -179,6 +165,7 @@ describe("AdminSidebar", () => {
       "/clients",
       "/documents",
       "/communications",
+      "/tasks",
       "/settings",
     ];
 
@@ -198,8 +185,49 @@ describe("AdminSidebar", () => {
       </AdminSidebar>
     );
 
-    // Desktop sidebar + mobile bottom nav = at least 2 nav regions
+    // Desktop sidebar + tablet sidebar + mobile bottom nav = at least 3 nav regions
     const navElements = screen.getAllByRole("navigation", { name: "Main" });
     expect(navElements.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("renders Tasks nav item in main navigation", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    const tasksLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("href") === "/tasks"
+    );
+    expect(tasksLinks.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders Comms short label in mobile bottom nav", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    // Mobile bottom nav uses "Comms" short label for Communications
+    expect(screen.getAllByText("Comms").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders Settings in sidebar footer separate from main nav", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    // Settings should still be rendered
+    const settingsLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("href") === "/settings"
+    );
+    expect(settingsLinks.length).toBeGreaterThanOrEqual(1);
+
+    // Settings should appear as text (in desktop sidebar footer)
+    expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
   });
 });

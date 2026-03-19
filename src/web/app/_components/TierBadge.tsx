@@ -1,32 +1,29 @@
-import { Badge } from "@/app/_components/ui/badge";
 import { cn } from "@/lib/utils";
 
 type Tier = 1 | 2 | 3;
 
-interface TierBadgeProps {
-  tier: Tier;
-  className?: string;
-}
-
-const tierConfig: Record<Tier, { label: string; className: string }> = {
-  1: {
-    label: "Tier 1",
-    className: "bg-tier-1 text-white border-transparent",
-  },
-  2: {
-    label: "Tier 2",
-    className: "bg-tier-2 text-white border-transparent",
-  },
-  3: {
-    label: "Tier 3",
-    className: "bg-tier-3 text-white border-transparent",
-  },
+const tierStyles: Record<Tier, string> = {
+  1: "text-tier-1-text bg-tier-1-bg border-tier-1-border",
+  2: "text-tier-2-text bg-tier-2-bg border-tier-2-border",
+  3: "text-tier-3-text bg-tier-3-bg border-tier-3-border",
 };
 
-export function TierBadge({ tier, className }: TierBadgeProps) {
-  const config = tierConfig[tier];
-
+export function TierBadge({
+  tier,
+  className,
+}: {
+  tier: Tier;
+  className?: string;
+}) {
   return (
-    <Badge className={cn(config.className, className)}>{config.label}</Badge>
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold",
+        tierStyles[tier],
+        className
+      )}
+    >
+      Tier {tier}
+    </span>
   );
 }
