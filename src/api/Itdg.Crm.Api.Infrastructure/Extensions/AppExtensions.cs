@@ -54,6 +54,15 @@ public static class AppExtensions
         services.AddScoped<ITemplateRepository, TemplateRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
+
+        // Command handlers
+        services.AddScoped<ICommandHandler<Itdg.Crm.Api.Application.Commands.SendPortalMessage>, Itdg.Crm.Api.Application.CommandHandlers.SendPortalMessageHandler>();
+        services.AddScoped<ICommandHandler<Itdg.Crm.Api.Application.Commands.MarkMessageAsRead>, Itdg.Crm.Api.Application.CommandHandlers.MarkMessageAsReadHandler>();
+
+        // Query handlers
+        services.AddScoped<IQueryHandler<Itdg.Crm.Api.Application.Queries.GetPortalMessages, IEnumerable<Itdg.Crm.Api.Application.Dtos.MessageDto>>, Itdg.Crm.Api.Application.QueryHandlers.GetPortalMessagesHandler>();
+        services.AddScoped<IQueryHandler<Itdg.Crm.Api.Application.Queries.GetPortalMessageById, Itdg.Crm.Api.Application.Dtos.MessageDto>, Itdg.Crm.Api.Application.QueryHandlers.GetPortalMessageByIdHandler>();
 
         return services;
     }
