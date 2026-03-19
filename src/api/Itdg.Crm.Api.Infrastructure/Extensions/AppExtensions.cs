@@ -1,5 +1,6 @@
 namespace Itdg.Crm.Api.Infrastructure.Extensions;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
 using Itdg.Crm.Api.Infrastructure.Data;
 using Itdg.Crm.Api.Infrastructure.Options;
@@ -17,7 +18,7 @@ public static class AppExtensions
 
         // Authorization — require authenticated user by default
         services.AddAuthorizationBuilder()
-            .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+            .SetFallbackPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build());
 
