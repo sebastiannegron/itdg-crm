@@ -2,6 +2,11 @@ namespace Itdg.Crm.Api.Infrastructure.Extensions;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
+using Itdg.Crm.Api.Application.Commands;
+using Itdg.Crm.Api.Application.CommandHandlers;
+using Itdg.Crm.Api.Application.Dtos;
+using Itdg.Crm.Api.Application.Queries;
+using Itdg.Crm.Api.Application.QueryHandlers;
 using Itdg.Crm.Api.Infrastructure.Data;
 using Itdg.Crm.Api.Infrastructure.Interceptors;
 using Itdg.Crm.Api.Infrastructure.Data.Interceptors;
@@ -63,6 +68,20 @@ public static class AppExtensions
         // Query handlers
         services.AddScoped<IQueryHandler<Itdg.Crm.Api.Application.Queries.GetPortalMessages, IEnumerable<Itdg.Crm.Api.Application.Dtos.MessageDto>>, Itdg.Crm.Api.Application.QueryHandlers.GetPortalMessagesHandler>();
         services.AddScoped<IQueryHandler<Itdg.Crm.Api.Application.Queries.GetPortalMessageById, Itdg.Crm.Api.Application.Dtos.MessageDto>, Itdg.Crm.Api.Application.QueryHandlers.GetPortalMessageByIdHandler>();
+
+        // Command handlers
+        services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
+        services.AddScoped<ICommandHandler<UpdateClient>, UpdateClientHandler>();
+        services.AddScoped<ICommandHandler<DeleteClient>, DeleteClientHandler>();
+        services.AddScoped<ICommandHandler<CreateTemplate>, CreateTemplateHandler>();
+        services.AddScoped<ICommandHandler<UpdateTemplate>, UpdateTemplateHandler>();
+        services.AddScoped<ICommandHandler<RetireTemplate>, RetireTemplateHandler>();
+      
+        // Query handlers
+        services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
+        services.AddScoped<IQueryHandler<GetClients, PaginatedResultDto<ClientDto>>, GetClientsHandler>();
+        services.AddScoped<IQueryHandler<GetTemplates, IEnumerable<CommunicationTemplateDto>>, GetTemplatesHandler>();
+        services.AddScoped<IQueryHandler<GetTemplateById, CommunicationTemplateDto>, GetTemplateByIdHandler>();
 
         return services;
     }
