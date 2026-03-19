@@ -103,16 +103,19 @@
 #### Story 0.6.1: As a user, I see a branded application shell with navigation
 
 - **Task 0.6.1.1** — Create admin layout with responsive sidebar navigation
-  > Create `app/[locale]/(admin)/layout.tsx` with a responsive sidebar: persistent on desktop (lg+), hamburger overlay on tablet, bottom nav bar on mobile. Add navigation links for: Dashboard, Clients, Documents, Communications, Settings. Use shadcn/ui components. Include notification bell with unread badge in header. Follow design system from ARCHITECTURE.md Section 9.
+  > Create `app/[locale]/(admin)/layout.tsx` with a navy (`#1a2744`) sidebar using R&A branding (orange `#E85320` brand name + muted white subtitle). Desktop (lg+): 210px persistent sidebar (not collapsible). Tablet (md–lg): 52px icon-only persistent sidebar with tooltips. Mobile: 56px navy bottom nav bar. Nav items: Dashboard, Clients, Documents, Communications, Tasks — Settings as gear icon in sidebar footer. Active state: orange left border + `rgba(232,83,32,0.18)` background + white text. Header: 50px with notification bell (unread badge support) and user avatar (navy bg, white initials). Reference: `docs/ui-template.tsx`.
 
 - **Task 0.6.1.2** — Create client portal layout
   > Create `app/[locale]/(portal)/layout.tsx` with a branded portal header (tenant logo, top nav: Messages, Documents, Payments placeholder). Visually distinct from admin layout — centered content with `max-w-4xl`, simple top nav, full-width on mobile. Support tenant-customizable primary color.
 
 - **Task 0.6.1.3** — Create shared UI components
-  > Set up shadcn/ui with CRM theme tokens (colors, typography from ARCHITECTURE.md Section 9). Create shared components in `app/_components/`: `DataTable` (table on desktop, card list on mobile, with sorting/filtering/pagination), `PageHeader`, `EmptyState`, `LoadingSpinner`, `ErrorBoundary`.
+  > Set up shadcn/ui with CRM theme tokens (colors, typography from ARCHITECTURE.md Section 9). Create shared components in `app/_components/`: `DataTable` (table on desktop, card list on mobile, with sorting/filtering/pagination), `PageHeader`, `EmptyState`, `LoadingSpinner`, `ErrorBoundary`, `TierBadge` (tier 1/2/3 with gold/blue/gray color schemes), `StatusBadge` (Active/Pending Docs/Awaiting Payment + task statuses with specific color mappings), `NotificationDot` (8px colored dot: doc=blue, alert=red, task=green, msg=purple). See `docs/ui-template.tsx` for exact color specs.
 
 - **Task 0.6.1.4** — Create base API client and service layer
   > Create `server/Services/api-client.ts` (typed fetch wrapper that attaches MSAL auth tokens to .NET API calls). Create example service function in `server/Services/dashboardService.ts`. Create example server action with OTel span wrapping. Verify end-to-end connectivity to the .NET API.
+
+- **Task 0.6.1.6** — Add Tasks nav placeholder and Coming Soon page
+  > Add Tasks nav item (CheckSquare icon) to admin sidebar. Create a placeholder page at `app/[locale]/(admin)/tasks/page.tsx` displaying "Coming Soon — Phase 2" message. The full Tasks Kanban board (from `docs/ui-template.tsx`) maps to Phase 2 per current roadmap.
 
 - **Task 0.6.1.5** — Configure next-intl and shared locale files
   > Install `next-intl`. Create `i18n/routing.ts` with `en-pr` / `es-pr` locales and `createNavigation`. Create `i18n/request.ts`. Create `app/[locale]/_shared/app-fieldnames.ts` with typed i18n dictionary for both locales (initial: nav strings). Create `app/[locale]/_shared/app-enums.ts` with `PageStatus` type, `codeRegex`, `urlRegex`. Configure `middleware.ts` for locale detection.
@@ -331,7 +334,7 @@
   > Create `GetDashboardSummary` query + handler returning: total clients (by status, tier), pending tasks count (by status, priority, assignee), recent escalations, upcoming deadlines (next 7 days), unread notifications count. Create `DashboardSummaryDto` in `Dtos/`. Add endpoint to `DashboardEndpoints`: `GET /api/v1/Dashboard/Summary`. Register in `AddInfrastructure`.
 
 - **Task 4.1.1.2** — Create dashboard page with responsive widget layout
-  > Create 4-file page at `app/[locale]/(admin)/dashboard/`: `page.tsx` (fetch summary via `dashboardService.ts`), `DashboardView.tsx` (responsive grid: 3-4 cols on desktop, 2 on tablet, 1 on mobile). Implement widgets using shadcn/ui Card: Task Summary (counts by status), Escalations Panel (prioritized list), Upcoming Deadlines, Recent Activity feed. `shared.ts` (widget types), `actions.ts` (refresh actions with OTel).
+  > Create 4-file page at `app/[locale]/(admin)/dashboard/`: `page.tsx` (fetch summary via `dashboardService.ts`), `DashboardView.tsx` (responsive grid: 4 stat cards in a row — 2x2 on mobile — each with colored accent bar: blue for clients, orange for tasks, green for docs, red for escalated). Main content + 280px right column on desktop. Pending Tasks list with priority dots (red=high, amber=medium, gray=low) and StatusBadge. Escalated Issues panel with red cards (`#FEF2F2` bg, `#FECACA` border). Upcoming Deadlines panel with orange date badges. `shared.ts` (widget types), `actions.ts` (refresh actions with OTel). Reference: `docs/ui-template.tsx`.
 
 #### Story 4.1.2: As an admin, I see all team calendars in a unified view
 

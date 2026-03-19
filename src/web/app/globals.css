@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
-  --color-primary: hsl(15 81% 52%);
+  --color-primary: #E85320;
   --color-primary-foreground: hsl(0 0% 100%);
   --color-secondary: hsl(210 40% 96%);
   --color-secondary-foreground: hsl(215 20% 30%);
@@ -15,19 +15,28 @@
   --color-warning-foreground: hsl(0 0% 100%);
   --color-muted: hsl(215 16% 93%);
   --color-muted-foreground: hsl(215 16% 47%);
-  --color-sidebar: hsl(221 45% 18%);
-  --color-sidebar-foreground: hsl(0 0% 100%);
-  --color-sidebar-accent: hsl(15 81% 52%);
-  --color-background: hsl(210 40% 96%);
-  --color-foreground: hsl(220 15% 10%);
+  --color-background: #F1F5F9;
+  --color-foreground: #1a2744;
   --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(220 15% 10%);
-  --color-border: hsl(215 20% 88%);
-  --color-ring: hsl(15 81% 52%);
+  --color-card-foreground: #1a2744;
+  --color-border: #E5E7EB;
+  --color-ring: #E85320;
 
-  --color-tier-1: hsl(45 93% 47%);
-  --color-tier-2: hsl(199 100% 39%);
-  --color-tier-3: hsl(215 16% 55%);
+  --color-sidebar: #1a2744;
+  --color-sidebar-foreground: hsl(0 0% 100%);
+  --color-sidebar-accent: rgba(232, 83, 32, 0.18);
+  --color-info: #0088C8;
+  --color-info-foreground: hsl(0 0% 100%);
+
+  --color-tier-1-text: #92400E;
+  --color-tier-1-bg: #FEF3C7;
+  --color-tier-1-border: #FCD34D;
+  --color-tier-2-text: #1E40AF;
+  --color-tier-2-bg: #DBEAFE;
+  --color-tier-2-border: #93C5FD;
+  --color-tier-3-text: #374151;
+  --color-tier-3-bg: #F3F4F6;
+  --color-tier-3-border: #D1D5DB;
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
@@ -44,7 +53,7 @@
 }
 
 .dark {
-  --color-primary: hsl(15 81% 60%);
+  --color-primary: #F07050;
   --color-secondary: hsl(215 20% 18%);
   --color-secondary-foreground: hsl(215 20% 80%);
   --color-accent: hsl(160 60% 50%);
@@ -61,5 +70,21 @@
   --color-card: hsl(220 15% 13%);
   --color-card-foreground: hsl(0 0% 95%);
   --color-border: hsl(215 20% 22%);
-  --color-ring: hsl(15 81% 60%);
+  --color-ring: #F07050;
+
+  --color-sidebar: hsl(220 42% 12%);
+  --color-sidebar-foreground: hsl(0 0% 95%);
+  --color-sidebar-accent: rgba(240, 112, 80, 0.18);
+  --color-info: #3BA4D8;
+  --color-info-foreground: hsl(0 0% 100%);
+
+  --color-tier-1-text: #FCD34D;
+  --color-tier-1-bg: rgba(252, 211, 77, 0.15);
+  --color-tier-1-border: rgba(252, 211, 77, 0.3);
+  --color-tier-2-text: #93C5FD;
+  --color-tier-2-bg: rgba(147, 197, 253, 0.15);
+  --color-tier-2-border: rgba(147, 197, 253, 0.3);
+  --color-tier-3-text: #9CA3AF;
+  --color-tier-3-bg: rgba(156, 163, 175, 0.15);
+  --color-tier-3-border: rgba(156, 163, 175, 0.3);
 }
