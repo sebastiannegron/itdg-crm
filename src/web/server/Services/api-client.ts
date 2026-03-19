@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 const API_BASE = process.env.API_BASE_URL ?? "http://localhost:5000";
 
 /**
@@ -53,7 +55,7 @@ export async function apiFetch<T>(
   options?: RequestInit,
 ): Promise<T> {
   const token = await getAuthToken();
-  const correlationId = crypto.randomUUID();
+  const correlationId = randomUUID();
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",

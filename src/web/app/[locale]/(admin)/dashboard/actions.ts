@@ -6,6 +6,8 @@ import {
   type HealthStatusDto,
 } from "@/server/Services/dashboardService";
 
+const tracer = trace.getTracer("web");
+
 export interface ActionResult<T = undefined> {
   success: boolean;
   message: string;
@@ -13,9 +15,7 @@ export interface ActionResult<T = undefined> {
 }
 
 export async function checkApiHealth(): Promise<ActionResult<HealthStatusDto>> {
-  return trace
-    .getTracer("web")
-    .startActiveSpan("Check API Health", async (span: Span) => {
+  return tracer.startActiveSpan("Check API Health", async (span: Span) => {
       try {
         const health = await getHealthStatus();
         span.setStatus({ code: SpanStatusCode.OK });
