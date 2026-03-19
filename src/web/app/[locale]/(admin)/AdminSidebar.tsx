@@ -8,8 +8,8 @@ import {
   CheckSquare,
   Settings,
   Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
+  // PanelLeftClose,
+  // PanelLeftOpen,
   Bell,
 } from "lucide-react";
 import { useLocale } from "next-intl";
@@ -27,6 +27,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/_components/ui/tooltip";
+import { useState } from "react";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/app/_components/ui/sheet";
+import { Badge } from "@/app/_components/ui/badge";
 
 interface NavItem {
   href: string;
@@ -48,11 +51,11 @@ const navItems: NavItem[] = [
   { href: "/tasks", labelKey: "nav_tasks", icon: CheckSquare },
 ];
 
-const settingsItem: NavItem = {
-  href: "/settings",
-  labelKey: "nav_settings",
-  icon: Settings,
-};
+// const settingsItem: NavItem = {
+//   href: "/settings",
+//   labelKey: "nav_settings",
+//   icon: Settings,
+// };
 
 function DesktopNavLink({
   item,
@@ -164,7 +167,6 @@ export default function AdminSidebar({
 }) {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const labels = fieldnames[locale];
@@ -199,7 +201,7 @@ export default function AdminSidebar({
                     {labels.app_subtitle}
                   </SheetDescription>
                 </SheetHeader>
-                <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
+                {/* <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
                   {navItems.map((item) => (
                     <SheetNavLink
                       key={item.href}
@@ -209,15 +211,15 @@ export default function AdminSidebar({
                       onNavigate={() => setSheetOpen(false)}
                     />
                   ))}
-                </nav>
-                <div className="border-t border-border p-3">
+                </nav> */}
+                {/* <div className="border-t border-border p-3">
                   <SheetNavLink
                     item={settingsItem}
                     locale={locale}
                     pathname={pathname}
                     onNavigate={() => setSheetOpen(false)}
                   />
-                </div>
+                </div> */}
               </SheetContent>
             </Sheet>
           </div>
@@ -242,20 +244,6 @@ export default function AdminSidebar({
               markAllReadLabel={labels.notifications_mark_all_read}
               emptyLabel={labels.notifications_empty}
             />
-            {/* Notification bell */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative h-[34px] w-[34px] rounded-lg bg-background"
-              aria-label={labels.nav_notifications}
-            >
-              <Bell className="h-4 w-4" />
-              {notificationCount > 0 && (
-                <Badge className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px]">
-                  {notificationCount}
-                </Badge>
-              )}
-            </Button>
 
             {/* User avatar */}
             <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-sidebar text-[10px] font-bold text-white">

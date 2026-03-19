@@ -109,15 +109,6 @@ describe("NotificationPanel", () => {
 
   it("closes panel when clicking outside", async () => {
     const user = userEvent.setup();
-    const { container } = render(
-      <div>
-        <div data-testid="outside">Outside</div>
-        <NotificationPanel
-          {...defaultProps}
-          notifications={sampleNotifications}
-        />
-      </div>
-    );
 
     await user.click(
       screen.getByRole("button", { name: "Notifications" })
