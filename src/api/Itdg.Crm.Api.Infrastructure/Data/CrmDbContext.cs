@@ -25,6 +25,8 @@ public class CrmDbContext : DbContext, IApplicationDbContext
 
     public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Client> Clients => Set<Client>();
+    public DbSet<ClientTier> ClientTiers => Set<ClientTier>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
 
