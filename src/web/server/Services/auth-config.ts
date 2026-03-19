@@ -29,3 +29,11 @@ export const msalConfig: Configuration = {
 export const loginRequest = {
   scopes: ["openid", "profile", "email"],
 };
+
+/** Cookie string that signals the middleware the user is authenticated. */
+export const AUTH_COOKIE_SET =
+  "msal-authenticated=true; path=/; max-age=86400; SameSite=Lax";
+
+/** Cookie string that clears the authentication signal. */
+export const AUTH_COOKIE_CLEAR =
+  "msal-authenticated=; path=/; max-age=0; SameSite=Lax";

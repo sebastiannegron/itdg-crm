@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { PublicClientApplication } from "@azure/msal-browser";
-import { msalConfig, loginRequest } from "@/server/Services/auth-config";
+import {
+  msalConfig,
+  loginRequest,
+  AUTH_COOKIE_SET,
+} from "@/server/Services/auth-config";
 
 const DEFAULT_REDIRECT = "/en-pr";
 
@@ -31,8 +35,7 @@ export default function LoginPage() {
 
         if (response?.account) {
           instance.setActiveAccount(response.account);
-          document.cookie =
-            "msal-authenticated=true; path=/; max-age=86400; SameSite=Lax";
+          document.cookie = AUTH_COOKIE_SET;
           const returnUrl =
             sessionStorage.getItem("login-return-url") ?? DEFAULT_REDIRECT;
           sessionStorage.removeItem("login-return-url");
@@ -42,12 +45,12 @@ export default function LoginPage() {
 
         const accounts = instance.getAllAccounts();
         if (accounts.length > 0) {
-          document.cookie =
-            "msal-authenticated=true; path=/; max-age=86400; SameSite=Lax";
+          document.cookie = AUTH_COOKIE_SET;
           window.location.href = DEFAULT_REDIRECT;
           return;
         }
-      } catch {
+      } catch (err) {
+        console.error("MSAL authentication error:", err);
         setError("Authentication failed. Please try again.");
       }
 
