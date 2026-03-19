@@ -1,5 +1,6 @@
 namespace Itdg.Crm.Api.Middlewares;
 
+using System.Diagnostics;
 using System.Security.Claims;
 using Itdg.Crm.Api.Domain.Entities;
 using Itdg.Crm.Api.Domain.GeneralConstants;
@@ -28,6 +29,8 @@ public class UserSyncMiddleware
 
     private async Task SyncUserAsync(ClaimsPrincipal principal, IUserRepository userRepository, CancellationToken cancellationToken)
     {
+        using Activity? activity = DiagnosticsConfig.ActivitySource.StartActivity("Sync User From Claims");
+
         var entraObjectId = principal.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value
             ?? principal.FindFirst("oid")?.Value;
 
@@ -35,6 +38,8 @@ public class UserSyncMiddleware
         {
             return;
         }
+
+        activity?.SetTag("EntraObjectId", entraObjectId);
 
         var existingUser = await userRepository.GetByEntraObjectIdAsync(entraObjectId, cancellationToken);
         if (existingUser is not null)
@@ -48,6 +53,8 @@ public class UserSyncMiddleware
             _logger.LogWarning("Cannot sync user: TenantId claim is missing or invalid for EntraObjectId {EntraObjectId}", entraObjectId);
             return;
         }
+
+        activity?.SetTag("TenantId", tenantId);
 
         var email = principal.FindFirst(ClaimTypes.Email)?.Value
             ?? principal.FindFirst("preferred_username")?.Value
