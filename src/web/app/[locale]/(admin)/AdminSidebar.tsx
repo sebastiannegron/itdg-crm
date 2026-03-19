@@ -6,6 +6,7 @@ import {
   Users,
   FileText,
   MessageSquare,
+  CheckSquare,
   Settings,
   Bell,
   Menu,
@@ -37,6 +38,7 @@ import {
 interface NavItem {
   href: string;
   labelKey: keyof (typeof fieldnames)["en-pr"];
+  mobileLabelKey?: keyof (typeof fieldnames)["en-pr"];
   icon: React.ComponentType<{ className?: string }>;
 }
 
@@ -47,10 +49,17 @@ const navItems: NavItem[] = [
   {
     href: "/communications",
     labelKey: "nav_communications",
+    mobileLabelKey: "nav_comms",
     icon: MessageSquare,
   },
-  { href: "/settings", labelKey: "nav_settings", icon: Settings },
+  { href: "/tasks", labelKey: "nav_tasks", icon: CheckSquare },
 ];
+
+const settingsItem: NavItem = {
+  href: "/settings",
+  labelKey: "nav_settings",
+  icon: Settings,
+};
 
 function NavLink({
   item,
@@ -105,7 +114,7 @@ function MobileNavLink({
   locale: Locale;
   pathname: string;
 }) {
-  const label = fieldnames[locale][item.labelKey];
+  const label = fieldnames[locale][item.mobileLabelKey ?? item.labelKey];
   const isActive =
     pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -197,7 +206,7 @@ export default function AdminSidebar({
                     {labels.app_name}
                   </SheetDescription>
                 </SheetHeader>
-                <nav className="flex flex-col gap-1 p-3" aria-label="Main">
+                <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
                   {navItems.map((item) => (
                     <SheetNavLink
                       key={item.href}
@@ -208,6 +217,14 @@ export default function AdminSidebar({
                     />
                   ))}
                 </nav>
+                <div className="border-t border-border p-3">
+                  <SheetNavLink
+                    item={settingsItem}
+                    locale={locale}
+                    pathname={pathname}
+                    onNavigate={() => setSheetOpen(false)}
+                  />
+                </div>
               </SheetContent>
             </Sheet>
           </div>
@@ -295,6 +312,16 @@ export default function AdminSidebar({
                 />
               ))}
             </nav>
+
+            {/* Sidebar footer with Settings */}
+            <div className="border-t border-border p-3">
+              <NavLink
+                item={settingsItem}
+                locale={locale}
+                pathname={pathname}
+                collapsed={collapsed}
+              />
+            </div>
           </aside>
 
           {/* Main content */}

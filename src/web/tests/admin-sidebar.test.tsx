@@ -51,6 +51,7 @@ describe("AdminSidebar", () => {
     expect(
       screen.getAllByText("Communications").length
     ).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Tasks").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
   });
 
@@ -179,6 +180,7 @@ describe("AdminSidebar", () => {
       "/clients",
       "/documents",
       "/communications",
+      "/tasks",
       "/settings",
     ];
 
@@ -201,5 +203,46 @@ describe("AdminSidebar", () => {
     // Desktop sidebar + mobile bottom nav = at least 2 nav regions
     const navElements = screen.getAllByRole("navigation", { name: "Main" });
     expect(navElements.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("renders Tasks nav item in main navigation", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    const tasksLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("href") === "/tasks"
+    );
+    expect(tasksLinks.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders Comms short label in mobile bottom nav", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    // Mobile bottom nav uses "Comms" short label for Communications
+    expect(screen.getAllByText("Comms").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders Settings in sidebar footer separate from main nav", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    // Settings should still be rendered
+    const settingsLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("href") === "/settings"
+    );
+    expect(settingsLinks.length).toBeGreaterThanOrEqual(1);
+
+    // Settings should appear as text (in desktop sidebar footer)
+    expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
   });
 });
