@@ -7,4 +7,3 @@ export default function AdminLayout({
 }) {
   return <AdminSidebar>{children}</AdminSidebar>;
 }
-

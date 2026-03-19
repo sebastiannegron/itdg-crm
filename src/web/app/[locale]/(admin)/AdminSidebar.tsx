@@ -21,6 +21,7 @@ import { Badge } from "@/app/_components/ui/badge";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -192,6 +193,9 @@ export default function AdminSidebar({
                   <SheetTitle className="text-left text-primary">
                     {labels.app_name_short}
                   </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    {labels.app_name}
+                  </SheetDescription>
                 </SheetHeader>
                 <nav className="flex flex-col gap-1 p-3" aria-label="Main">
                   {navItems.map((item) => (
