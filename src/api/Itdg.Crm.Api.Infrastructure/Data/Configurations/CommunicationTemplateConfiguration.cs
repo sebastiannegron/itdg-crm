@@ -44,5 +44,8 @@ public class CommunicationTemplateConfiguration : IEntityTypeConfiguration<Commu
 
         builder.HasIndex(t => new { t.TenantId, t.Name })
             .HasDatabaseName("IX_CommunicationTemplate_TenantId_Name");
+
+        builder.HasIndex(t => new { t.TenantId, t.IsActive })
+            .HasDatabaseName("IX_CommunicationTemplate_TenantId_IsActive");
     }
 }
