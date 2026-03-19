@@ -2,8 +2,8 @@ namespace Itdg.Crm.Api.Infrastructure.Extensions;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
-using Itdg.Crm.Api.Application.CommandHandlers;
 using Itdg.Crm.Api.Application.Commands;
+using Itdg.Crm.Api.Application.CommandHandlers;
 using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Queries;
 using Itdg.Crm.Api.Application.QueryHandlers;
@@ -64,10 +64,15 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
         services.AddScoped<ICommandHandler<UpdateClient>, UpdateClientHandler>();
         services.AddScoped<ICommandHandler<DeleteClient>, DeleteClientHandler>();
-
+        services.AddScoped<ICommandHandler<CreateTemplate>, CreateTemplateHandler>();
+        services.AddScoped<ICommandHandler<UpdateTemplate>, UpdateTemplateHandler>();
+        services.AddScoped<ICommandHandler<RetireTemplate>, RetireTemplateHandler>();
+      
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
         services.AddScoped<IQueryHandler<GetClients, PaginatedResultDto<ClientDto>>, GetClientsHandler>();
+        services.AddScoped<IQueryHandler<GetTemplates, IEnumerable<CommunicationTemplateDto>>, GetTemplatesHandler>();
+        services.AddScoped<IQueryHandler<GetTemplateById, CommunicationTemplateDto>, GetTemplateByIdHandler>();
 
         return services;
     }
