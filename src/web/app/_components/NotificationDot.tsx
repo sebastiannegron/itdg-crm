@@ -22,6 +22,13 @@ interface NotificationDotProps {
   className?: string;
 }
 
+const dotColorMap: Record<NotificationType, string> = {
+  doc: "bg-blue-500",
+  alert: "bg-red-500",
+  task: "bg-emerald-500",
+  msg: "bg-purple-500",
+};
+
 export function NotificationDot({ type, className }: NotificationDotProps) {
   return (
     <span
@@ -31,6 +38,8 @@ export function NotificationDot({ type, className }: NotificationDotProps) {
         className
       )}
       aria-hidden="true"
+      role="status"
+      aria-label={`${type} notification`}
     />
   );
 }
