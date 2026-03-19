@@ -5,14 +5,14 @@ using System.Reflection;
 
 public class CrmDbContext : DbContext, IApplicationDbContext
 {
-    private readonly Guid _currentTenantId;
+    private Guid CurrentTenantId { get; }
 
-    private static readonly FieldInfo CurrentTenantIdField =
-        typeof(CrmDbContext).GetField(nameof(_currentTenantId), BindingFlags.NonPublic | BindingFlags.Instance)!;
+    private static readonly PropertyInfo CurrentTenantIdPropertyInfo =
+        typeof(CrmDbContext).GetProperty(nameof(CurrentTenantId), BindingFlags.NonPublic | BindingFlags.Instance)!;
 
     public CrmDbContext(DbContextOptions<CrmDbContext> options, ITenantProvider tenantProvider) : base(options)
     {
-        _currentTenantId = InitializeTenantId(tenantProvider);
+        CurrentTenantId = ResolveTenantId(tenantProvider);
     }
 
     /// <summary>
@@ -20,7 +20,7 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     /// </summary>
     protected CrmDbContext(DbContextOptions options, ITenantProvider tenantProvider) : base(options)
     {
-        _currentTenantId = InitializeTenantId(tenantProvider);
+        CurrentTenantId = ResolveTenantId(tenantProvider);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -29,16 +29,17 @@ public class CrmDbContext : DbContext, IApplicationDbContext
         ApplyGlobalQueryFilters(modelBuilder);
     }
 
-    private static Guid InitializeTenantId(ITenantProvider tenantProvider)
+    private static Guid ResolveTenantId(ITenantProvider tenantProvider)
     {
         try
         {
             return tenantProvider.GetTenantId();
         }
-        catch
+        catch (Exception ex) when (
+            ex is InvalidOperationException or UnauthorizedAccessException)
         {
-            // During migrations or unauthenticated requests (e.g., health checks),
-            // the tenant ID is not available. Default to Guid.Empty.
+            // Expected during migrations or unauthenticated requests (e.g., health checks)
+            // where no HTTP context or authenticated user is available.
             return Guid.Empty;
         }
     }
@@ -68,10 +69,10 @@ public class CrmDbContext : DbContext, IApplicationDbContext
 
             if (isTenantEntity)
             {
-                // e.TenantId == _currentTenantId (parameterized by EF Core per DbContext instance)
+                // e.TenantId == CurrentTenantId (parameterized by EF Core per DbContext instance)
                 var tenantIdProperty = Expression.Property(parameter, nameof(TenantEntity.TenantId));
                 var dbContextConstant = Expression.Constant(this);
-                var currentTenantIdAccess = Expression.Field(dbContextConstant, CurrentTenantIdField);
+                var currentTenantIdAccess = Expression.Property(dbContextConstant, CurrentTenantIdPropertyInfo);
                 var tenantFilter = Expression.Equal(tenantIdProperty, currentTenantIdAccess);
 
                 filter = filter is not null ? Expression.AndAlso(filter, tenantFilter) : tenantFilter;

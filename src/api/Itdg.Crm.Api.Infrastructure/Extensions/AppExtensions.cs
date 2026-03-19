@@ -18,7 +18,7 @@ public static class AppExtensions
         // Database
         services.AddDbContext<CrmDbContext>((serviceProvider, options) =>
         {
-            options.UseSqlServer(configuration.GetConnectionString("CrmDb"))
+            options.UseSqlServer(configuration.GetConnectionString(DatabaseOptions.ConnectionStringName))
                 .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
         });
 
