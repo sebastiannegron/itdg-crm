@@ -24,6 +24,7 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     }
 
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<CommunicationTemplate> CommunicationTemplates => Set<CommunicationTemplate>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
