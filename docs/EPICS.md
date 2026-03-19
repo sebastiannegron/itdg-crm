@@ -246,7 +246,7 @@
 #### Story 3.1.2: As an associate, I can send standardized messages to clients using templates
 
 - **Task 3.1.2.1** — Create send-from-template flow
-  > Create `SendTemplateMessage` command + handler that renders a template with client data and sends via the portal (creates Message record) and/or email (via `IEmailSender` / SendGrid). Create endpoint and UI flow: template selector → preview rendered message → confirm and send.
+  > Create `SendTemplateMessage` command + handler that renders a template with client data and sends via the portal (creates Message record) and/or email (via `IEmailSender` / Microsoft Graph). Create endpoint and UI flow: template selector → preview rendered message → confirm and send.
 
 ### Feature 3.2: Client Portal
 
@@ -314,8 +314,8 @@
 - **Task 3.5.1.5** — Add SignalR for real-time in-app notifications
   > Add SignalR hub to the .NET API (`NotificationHub`). When a notification is created with in-app channel, push to connected clients via SignalR. Frontend subscribes to the hub in `hooks/use-notifications.ts` and updates the notification badge in real time.
 
-- **Task 3.5.1.6** — Create SendGrid email delivery integration
-  > Create `IEmailSender` interface in Application and `SendGridEmailSender` implementation in Infrastructure. Support: transactional emails (notification delivery), template-based emails (communication templates). Create `SendGridOptions` with `const string Key`. Register in `AddInfrastructure` with API key from Key Vault.
+- **Task 3.5.1.6** — Create Microsoft Graph email delivery integration
+  > Create `IEmailSender` interface in Application and `MicrosoftGraphEmailSender` implementation in Infrastructure using the Microsoft Graph SDK. Send emails via a shared mailbox or service account. Support: transactional emails (notification delivery), template-based emails (communication templates). Create `MicrosoftGraphEmailOptions` with `const string Key`. Authenticate using the existing Entra ID app registration with `Mail.Send` permission. Register in `AddInfrastructure`.
 
 ---
 
@@ -374,7 +374,7 @@
 #### Story 5.2.2: As an admin, I can manage integration connections
 
 - **Task 5.2.2.1** — Create integrations settings page
-  > Create 4-file page at `app/[locale]/(admin)/settings/integrations/`: connection status for Google Workspace (per-user Gmail, Calendar, Drive), SendGrid, Azure OpenAI. Show connected/disconnected status, last sync time, and connect/disconnect actions.
+  > Create 4-file page at `app/[locale]/(admin)/settings/integrations/`: connection status for Google Workspace (per-user Gmail, Calendar, Drive), Microsoft Graph (email), Azure OpenAI. Show connected/disconnected status, last sync time, and connect/disconnect actions.
 
 ### Feature 5.3: Audit Log
 

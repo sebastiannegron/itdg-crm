@@ -59,7 +59,7 @@ A web-based CRM platform for a tax consulting practice in Puerto Rico. The syste
 └──────────┘ └──────────┘ └───────────┘ │ • Google Calendar API    │
                                         │ • Google Drive API       │
 ┌──────────────────────────┐            │ • Azure OpenAI Service   │
-│     Azure Services       │            │ • SendGrid / Azure Comms │
+│     Azure Services       │            │ • Microsoft Graph API    │
 │ • Application Insights   │            │ • Payment Partner (Ph2)  │
 │ • Azure AI Search        │            │ • QuickBooks Online (Ph4)│
 │ • Azure Blob Storage     │            └──────────────────────────┘
@@ -86,7 +86,7 @@ A web-based CRM platform for a tax consulting practice in Puerto Rico. The syste
 | **Auth** | Microsoft Entra ID (OpenID Connect) | MSAL.js (frontend) + Microsoft.Identity.Web (backend) |
 | **Database** | Azure SQL Database (SQL Server) | Encrypted at rest (AES-256) |
 | **Search** | Azure AI Search | Full-text document search |
-| **Email Delivery** | SendGrid | Notifications, templates, campaigns |
+| **Email Delivery** | Microsoft Graph API | Notifications, templates, campaigns (via shared mailbox or service account) |
 | **AI** | Azure OpenAI Service | Email drafting assistance |
 | **Observability (BE)** | OpenTelemetry + Azure Monitor / Application Insights | ActivitySource in Diagnostics project |
 | **JSON** | System.Text.Json | `snake_case` via `[JsonPropertyName]` |
@@ -151,7 +151,7 @@ itdg-crm/
 │   │   │   ├── Extensions/                # AppExtensions.cs (AddInfrastructure — single entry point)
 │   │   │   ├── Options/                   # Infrastructure options
 │   │   │   ├── Repositories/              # GenericRepository<T> + specializations
-│   │   │   └── Services/                  # CacheService, Google clients, SendGrid, etc.
+│   │   │   └── Services/                  # CacheService, Google clients, Microsoft Graph, etc.
 │   │   │
 │   │   ├── Itdg.Crm.Api.Domain/          # Zero NuGet dependencies
 │   │   │   ├── Entities/                  # EF Core entities
@@ -500,7 +500,7 @@ public static class AppExtensions
         services.AddScoped<IGoogleDriveService, GoogleDriveService>();
         services.AddScoped<IGmailService, GmailService>();
         services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
-        services.AddScoped<IEmailSender, SendGridEmailSender>();
+        services.AddScoped<IEmailSender, MicrosoftGraphEmailSender>();
         services.AddScoped<IAiDraftingService, AzureOpenAiDraftingService>();
 
         return services;
@@ -1057,7 +1057,7 @@ The client portal uses the same shadcn/ui components but with a distinct visual 
 ### Notification Engine
 
 - Centralized `INotificationService` called by all modules (registered in `AddInfrastructure`)
-- Channels: In-app (SignalR real-time) + Email (SendGrid)
+- Channels: In-app (SignalR real-time) + Email (Microsoft Graph API)
 - Per-user preferences stored in `NotificationPreference` table
 - Supports immediate delivery and daily digest batching
 
@@ -1086,9 +1086,9 @@ The client portal uses the same shadcn/ui components but with a distinct visual 
 
 | Phase | Modules | External Integrations |
 |---|---|---|
-| **MVP** | Client Management, Client Portal, Document Management, Communications (templates + Gmail mirror), Dashboard, Notification Engine, RBAC | Entra ID, Gmail API, Google Calendar API, Google Drive API, Azure OpenAI, SendGrid |
+| **MVP** | Client Management, Client Portal, Document Management, Communications (templates + Gmail mirror), Dashboard, Notification Engine, RBAC | Entra ID, Gmail API, Google Calendar API, Google Drive API, Azure OpenAI, Microsoft Graph API |
 | **Phase 2** | Payment Collection, Task/Workflow Engine, Internal Messaging + Escalation | Payment Partner API |
-| **Phase 3** | Marketing/Newsletter Engine, Dashboard Enhancements | (SendGrid campaigns) |
+| **Phase 3** | Marketing/Newsletter Engine, Dashboard Enhancements | (Microsoft Graph campaigns) |
 | **Phase 4** | QuickBooks Online Sync, Full Bilingual UI (EN/ES) | QBO API (Intuit) |
 | **Phase 5** | Expert Tax Integration (optional), Advanced Workflow Automation | Expert Tax (TBD) |
 
