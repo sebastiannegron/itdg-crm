@@ -51,11 +51,8 @@ public static class AppExtensions
 
         // Repositories
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-<<<<<<< copilot/create-client-clienttier-entities
         services.AddScoped<IClientRepository, ClientRepository>();
-=======
         services.AddScoped<INotificationRepository, NotificationRepository>();
->>>>>>> main
 
         return services;
     }
