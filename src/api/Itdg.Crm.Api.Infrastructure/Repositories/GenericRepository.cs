@@ -4,9 +4,9 @@ using Itdg.Crm.Api.Infrastructure.Data;
 
 public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
 {
-    protected readonly CrmDbContext Context;
+    protected readonly DbContext Context;
 
-    public GenericRepository(CrmDbContext context)
+    public GenericRepository(DbContext context)
     {
         Context = context;
     }
