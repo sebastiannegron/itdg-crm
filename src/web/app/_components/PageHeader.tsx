@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/routing";
 import { ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -31,12 +32,12 @@ export function PageHeader({
                   <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                 )}
                 {crumb.href ? (
-                  <a
+                  <Link
                     href={crumb.href}
                     className="hover:text-foreground transition-colors"
                   >
                     {crumb.label}
-                  </a>
+                  </Link>
                 ) : (
                   <span className="text-foreground font-medium">
                     {crumb.label}

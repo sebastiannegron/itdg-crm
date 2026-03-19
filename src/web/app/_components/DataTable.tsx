@@ -248,11 +248,6 @@ export function DataTable<T>({
             <span>Rows per page:</span>
             <Select
               value={String(pageSize)}
-              onChange={(e) => {
-                setCurrentPage(1);
-                // Page size is controlled by parent via props — this is a display hint
-                void e;
-              }}
               className="w-16 h-8"
               aria-label="Rows per page"
               disabled

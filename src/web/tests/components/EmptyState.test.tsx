@@ -1,7 +1,13 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { EmptyState } from "@/app/_components/EmptyState";
 import { Inbox } from "lucide-react";
+
+vi.mock("@/i18n/routing", () => ({
+  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
+    <a href={href} {...props}>{children}</a>
+  ),
+}));
 
 describe("EmptyState", () => {
   it("renders icon, title, and message", () => {

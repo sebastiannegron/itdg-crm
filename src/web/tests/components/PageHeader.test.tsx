@@ -1,6 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { PageHeader } from "@/app/_components/PageHeader";
+
+vi.mock("@/i18n/routing", () => ({
+  Link: ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
+    <a href={href} {...props}>{children}</a>
+  ),
+}));
 
 describe("PageHeader", () => {
   it("renders title", () => {
