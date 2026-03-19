@@ -6,8 +6,11 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     {
     }
 
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CrmDbContext).Assembly);
     }
 }
