@@ -75,6 +75,29 @@ describe("AdminSidebar", () => {
     expect(brands.length).toBeGreaterThanOrEqual(1);
   });
 
+  it("renders the brand subtitle", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    const subtitles = screen.getAllByText("Tax Consulting");
+    expect(subtitles.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders user avatar in header", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    const avatar = screen.getByLabelText("User avatar");
+    expect(avatar).toBeInTheDocument();
+    expect(avatar.textContent).toBe("RA");
+  });
+
   it("renders the notification bell button", () => {
     render(
       <AdminSidebar>

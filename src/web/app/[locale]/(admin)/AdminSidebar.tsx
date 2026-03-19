@@ -183,8 +183,8 @@ export default function AdminSidebar({
                   <SheetTitle className="text-left text-primary">
                     {labels.app_name_short}
                   </SheetTitle>
-                  <SheetDescription className="sr-only">
-                    {labels.app_name}
+                  <SheetDescription className="text-left text-xs text-muted-foreground">
+                    {labels.app_subtitle}
                   </SheetDescription>
                 </SheetHeader>
                 <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">

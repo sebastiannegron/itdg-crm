@@ -3,12 +3,14 @@
 @theme inline {
   --color-primary: #E85320;
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-secondary: hsl(215 20% 95%);
+  --color-secondary: hsl(210 40% 96%);
   --color-secondary-foreground: hsl(215 20% 30%);
   --color-accent: hsl(160 60% 40%);
   --color-accent-foreground: hsl(0 0% 100%);
   --color-destructive: hsl(0 72% 51%);
   --color-destructive-foreground: hsl(0 0% 100%);
+  --color-info: hsl(199 100% 39%);
+  --color-info-foreground: hsl(0 0% 100%);
   --color-warning: hsl(38 92% 50%);
   --color-warning-foreground: hsl(0 0% 100%);
   --color-muted: hsl(215 16% 93%);
@@ -56,9 +58,13 @@
   --color-secondary-foreground: hsl(215 20% 80%);
   --color-accent: hsl(160 60% 50%);
   --color-destructive: hsl(0 72% 61%);
+  --color-info: hsl(199 100% 50%);
   --color-warning: hsl(38 92% 60%);
   --color-muted: hsl(215 16% 16%);
   --color-muted-foreground: hsl(215 16% 63%);
+  --color-sidebar: hsl(221 45% 14%);
+  --color-sidebar-foreground: hsl(0 0% 95%);
+  --color-sidebar-accent: hsl(15 81% 60%);
   --color-background: hsl(220 15% 10%);
   --color-foreground: hsl(0 0% 95%);
   --color-card: hsl(220 15% 13%);
