@@ -23,6 +23,7 @@ public class CrmDbContext : DbContext, IApplicationDbContext
         CurrentTenantId = ResolveTenantId(tenantProvider);
     }
 
+    public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
