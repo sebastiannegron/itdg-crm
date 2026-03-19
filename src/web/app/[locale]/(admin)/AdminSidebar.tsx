@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -9,9 +8,6 @@ import {
   CheckSquare,
   Settings,
   Bell,
-  Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
 } from "lucide-react";
 import { useLocale } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
@@ -20,20 +16,11 @@ import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import { Button } from "@/app/_components/ui/button";
 import { Badge } from "@/app/_components/ui/badge";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/app/_components/ui/sheet";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/_components/ui/tooltip";
-
 
 interface NavItem {
   href: string;
@@ -61,51 +48,39 @@ const settingsItem: NavItem = {
   icon: Settings,
 };
 
-function NavLink({
+function DesktopNavLink({
   item,
   locale,
   pathname,
-  collapsed,
 }: {
   item: NavItem;
   locale: Locale;
   pathname: string;
-  collapsed: boolean;
 }) {
   const label = fieldnames[locale][item.labelKey];
   const isActive =
     pathname === item.href || pathname.startsWith(`${item.href}/`);
 
-  const linkContent = (
+  return (
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "flex items-center gap-3 rounded-r-md py-2.5 pl-3 pr-3 text-sm font-medium transition-colors",
         isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-        collapsed && "justify-center px-2"
+          ? "border-l-[3px] border-primary bg-sidebar-accent text-white"
+          : "border-l-[3px] border-transparent text-white/40 hover:bg-white/5 hover:text-white/70"
       )}
       aria-current={isActive ? "page" : undefined}
     >
-      <item.icon className="h-5 w-5 shrink-0" />
-      {!collapsed && <span>{label}</span>}
+      <item.icon
+        className={cn("h-[18px] w-[18px] shrink-0", isActive && "text-primary")}
+      />
+      <span>{label}</span>
     </Link>
   );
-
-  if (collapsed) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
-        <TooltipContent side="right">{label}</TooltipContent>
-      </Tooltip>
-    );
-  }
-
-  return linkContent;
 }
 
-function MobileNavLink({
+function TabletNavLink({
   item,
   locale,
   pathname,
@@ -119,51 +94,59 @@ function MobileNavLink({
     pathname === item.href || pathname.startsWith(`${item.href}/`);
 
   return (
-    <Link
-      href={item.href}
-      className={cn(
-        "flex flex-col items-center gap-1 px-1 py-1 text-xs font-medium transition-colors",
-        isActive
-          ? "text-primary"
-          : "text-muted-foreground hover:text-foreground"
-      )}
-      aria-current={isActive ? "page" : undefined}
-    >
-      <item.icon className="h-5 w-5 shrink-0" />
-      <span className="truncate">{label}</span>
-    </Link>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Link
+          href={item.href}
+          className={cn(
+            "flex h-11 items-center justify-center transition-colors",
+            isActive
+              ? "border-l-[3px] border-primary bg-sidebar-accent"
+              : "border-l-[3px] border-transparent hover:bg-white/5"
+          )}
+          aria-current={isActive ? "page" : undefined}
+          aria-label={label}
+        >
+          <item.icon
+            className={cn(
+              "h-[18px] w-[18px]",
+              isActive ? "text-primary" : "text-white/35"
+            )}
+          />
+        </Link>
+      </TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
   );
 }
 
-function SheetNavLink({
+function MobileNavLink({
   item,
   locale,
   pathname,
-  onNavigate,
 }: {
   item: NavItem;
   locale: Locale;
   pathname: string;
-  onNavigate: () => void;
 }) {
-  const label = fieldnames[locale][item.labelKey];
+  const labelKey = item.mobileLabelKey ?? item.labelKey;
+  const label = fieldnames[locale][labelKey];
   const isActive =
     pathname === item.href || pathname.startsWith(`${item.href}/`);
 
   return (
     <Link
       href={item.href}
-      onClick={onNavigate}
       className={cn(
-        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+        "flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-[9px] font-medium transition-colors",
         isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+          ? "border-t-2 border-primary text-primary"
+          : "border-t-2 border-transparent text-white/35 hover:text-white/60"
       )}
       aria-current={isActive ? "page" : undefined}
     >
-      <item.icon className="h-5 w-5 shrink-0" />
-      <span>{label}</span>
+      <item.icon className="h-4 w-4 shrink-0" />
+      <span className="truncate">{label}</span>
     </Link>
   );
 }
@@ -175,8 +158,6 @@ export default function AdminSidebar({
 }) {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
   const labels = fieldnames[locale];
   const notificationCount = 0;
 
@@ -234,93 +215,131 @@ export default function AdminSidebar({
             {labels.app_name_short}
           </span>
 
+          {/* Breadcrumb area (desktop) */}
+          <span className="hidden text-xs text-muted-foreground lg:inline">
+            Raposo &amp; Associates &middot; 2025
+          </span>
+
           <div className="ml-auto flex items-center gap-2">
             {/* Notification bell */}
             <Button
               variant="ghost"
               size="icon"
-              className="relative"
+              className="relative h-[34px] w-[34px] rounded-lg bg-background"
               aria-label={labels.nav_notifications}
             >
-              <Bell className="h-5 w-5" />
+              <Bell className="h-4 w-4" />
               {notificationCount > 0 && (
-                <Badge className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-xs">
+                <Badge className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px]">
                   {notificationCount}
                 </Badge>
               )}
             </Button>
+
+            {/* User avatar */}
+            <div className="flex h-[30px] w-[30px] items-center justify-center rounded-full bg-sidebar text-[10px] font-bold text-white">
+              MR
+            </div>
           </div>
         </header>
 
         <div className="flex flex-1">
-          {/* Desktop sidebar (lg+) */}
-          <aside
-            className={cn(
-              "hidden lg:flex lg:flex-col lg:border-r lg:border-border lg:bg-card",
-              collapsed ? "lg:w-16" : "lg:w-64"
-            )}
-          >
-            {/* Sidebar header with brand */}
-            <div
-              className={cn(
-                "flex h-14 items-center border-b border-border px-4",
-                collapsed ? "justify-center" : "justify-between"
-              )}
-            >
-              {!collapsed && (
-                <span className="font-semibold text-primary">
-                  {labels.app_name_short}
-                </span>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setCollapsed(!collapsed)}
-                    aria-label={
-                      collapsed
-                        ? labels.nav_expand_sidebar
-                        : labels.nav_collapse_sidebar
-                    }
-                    className="h-8 w-8"
-                  >
-                    {collapsed ? (
-                      <PanelLeftOpen className="h-4 w-4" />
-                    ) : (
-                      <PanelLeftClose className="h-4 w-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  {collapsed
-                    ? labels.nav_expand_sidebar
-                    : labels.nav_collapse_sidebar}
-                </TooltipContent>
-              </Tooltip>
+          {/* Desktop sidebar (lg+) — 210px, navy, not collapsible */}
+          <aside className="hidden lg:flex lg:w-[210px] lg:flex-col lg:bg-sidebar">
+            {/* Brand */}
+            <div className="border-b border-white/[0.08] px-4 pb-3.5 pt-[18px]">
+              <div className="text-[17px] font-extrabold text-primary">
+                {labels.app_name_short}
+              </div>
+              <div className="mt-0.5 text-[9px] uppercase tracking-[1.2px] text-white/30">
+                {labels.app_subtitle}
+              </div>
             </div>
 
-            {/* Desktop nav links */}
-            <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
+            {/* Nav links */}
+            <nav
+              className="flex flex-1 flex-col gap-0.5 px-2 py-1.5"
+              aria-label="Main"
+            >
               {navItems.map((item) => (
-                <NavLink
+                <DesktopNavLink
                   key={item.href}
                   item={item}
                   locale={locale}
                   pathname={pathname}
-                  collapsed={collapsed}
                 />
               ))}
             </nav>
 
-            {/* Sidebar footer with Settings */}
-            <div className="border-t border-border p-3">
-              <NavLink
-                item={settingsItem}
-                locale={locale}
-                pathname={pathname}
-                collapsed={collapsed}
-              />
+            {/* Settings gear in footer */}
+            <div className="border-t border-white/[0.08] px-2 py-2">
+              <Link
+                href="/settings"
+                className={cn(
+                  "flex items-center gap-3 rounded-r-md py-2 pl-3 pr-3 text-sm font-medium transition-colors",
+                  pathname === "/settings" ||
+                    pathname.startsWith("/settings/")
+                    ? "border-l-[3px] border-primary bg-sidebar-accent text-white"
+                    : "border-l-[3px] border-transparent text-white/40 hover:bg-white/5 hover:text-white/70"
+                )}
+              >
+                <Settings className="h-[18px] w-[18px] shrink-0" />
+                <span>{labels.nav_settings}</span>
+              </Link>
+            </div>
+          </aside>
+
+          {/* Tablet sidebar (md–lg) — 52px icon-only, persistent */}
+          <aside className="hidden md:flex md:w-[52px] md:flex-col md:bg-sidebar lg:hidden">
+            {/* Brand */}
+            <div className="flex items-center justify-center border-b border-white/[0.08] py-3.5">
+              <span className="text-[17px] font-extrabold text-primary">
+                {labels.app_name_short.charAt(0)}
+              </span>
+            </div>
+
+            {/* Nav icons */}
+            <nav className="flex flex-1 flex-col gap-0.5 py-1.5" aria-label="Main">
+              {navItems.map((item) => (
+                <TabletNavLink
+                  key={item.href}
+                  item={item}
+                  locale={locale}
+                  pathname={pathname}
+                />
+              ))}
+            </nav>
+
+            {/* Settings gear in footer */}
+            <div className="border-t border-white/[0.08] py-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href="/settings"
+                    className={cn(
+                      "flex h-11 items-center justify-center transition-colors",
+                      pathname === "/settings" ||
+                        pathname.startsWith("/settings/")
+                        ? "border-l-[3px] border-primary bg-sidebar-accent"
+                        : "border-l-[3px] border-transparent hover:bg-white/5"
+                    )}
+                    aria-label={labels.nav_settings}
+                  >
+                    <Settings
+                      className={cn(
+                        "h-[18px] w-[18px]",
+                        pathname === "/settings" ||
+                          pathname.startsWith("/settings/")
+                          ? "text-primary"
+                          : "text-white/35"
+                      )}
+                    />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  {labels.nav_settings}
+                </TooltipContent>
+              </Tooltip>
             </div>
           </aside>
 
@@ -330,9 +349,9 @@ export default function AdminSidebar({
           </main>
         </div>
 
-        {/* Mobile bottom nav (sm only) */}
+        {/* Mobile bottom nav */}
         <nav
-          className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-border bg-card md:hidden"
+          className="fixed bottom-0 left-0 right-0 z-40 flex h-14 items-stretch bg-sidebar md:hidden"
           aria-label="Main"
         >
           {navItems.map((item) => (
