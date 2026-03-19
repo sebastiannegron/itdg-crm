@@ -32,7 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/_components/ui/tooltip";
-import { Separator } from "@/app/_components/ui/separator";
+
 
 interface NavItem {
   href: string;
