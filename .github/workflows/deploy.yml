@@ -1,0 +1,112 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  RESOURCE_GROUP: itdg-crm-dev-rg
+  ENVIRONMENT: dev
+  LOCATION: eastus2
+
+jobs:
+  infrastructure:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    outputs:
+      api-app-name: ${{ steps.deploy-bicep.outputs.apiAppServiceName }}
+      web-app-name: ${{ steps.deploy-bicep.outputs.webAppServiceName }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Bicep templates
+        id: deploy-bicep
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          template: infra/main.bicep
+          parameters: >
+            environment=${{ env.ENVIRONMENT }}
+            location=${{ env.LOCATION }}
+            sqlAdminLogin=${{ secrets.SQL_ADMIN_LOGIN }}
+            sqlAdminPassword=${{ secrets.SQL_ADMIN_PASSWORD }}
+
+  deploy-api:
+    name: Deploy API
+    runs-on: ubuntu-latest
+    needs: infrastructure
+    defaults:
+      run:
+        working-directory: src/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Publish
+        run: dotnet publish Itdg.Crm.Api/Itdg.Crm.Api.csproj --configuration Release --output ./publish
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ needs.infrastructure.outputs.api-app-name }}
+          package: src/api/publish
+
+  deploy-web:
+    name: Deploy Web
+    runs-on: ubuntu-latest
+    needs: infrastructure
+    defaults:
+      run:
+        working-directory: src/web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: src/web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure App Service
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ needs.infrastructure.outputs.web-app-name }}
+          package: src/web
