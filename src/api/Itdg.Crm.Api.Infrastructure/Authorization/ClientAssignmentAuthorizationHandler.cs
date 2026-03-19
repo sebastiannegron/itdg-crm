@@ -60,9 +60,8 @@ public class ClientAssignmentAuthorizationHandler : AuthorizationHandler<ClientA
             return;
         }
 
-        // Extract client_id from route values
-        var clientIdRouteValue = httpContext.Request.RouteValues["client_id"]?.ToString()
-            ?? httpContext.Request.RouteValues["id"]?.ToString();
+        // Extract client_id from route values (uses snake_case per project convention)
+        var clientIdRouteValue = httpContext.Request.RouteValues["client_id"]?.ToString();
 
         if (string.IsNullOrWhiteSpace(clientIdRouteValue) || !Guid.TryParse(clientIdRouteValue, out var clientId))
         {
