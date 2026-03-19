@@ -7,6 +7,9 @@ import {
   MessageSquare,
   CheckSquare,
   Settings,
+  Menu,
+  PanelLeftClose,
+  PanelLeftOpen,
   Bell,
 } from "lucide-react";
 import { useLocale } from "next-intl";
@@ -14,7 +17,10 @@ import { Link, usePathname } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import { Button } from "@/app/_components/ui/button";
-import { Badge } from "@/app/_components/ui/badge";
+import {
+  NotificationPanel,
+  type NotificationItem,
+} from "@/app/_components/NotificationPanel";
 import {
   Tooltip,
   TooltipContent,
@@ -158,8 +164,14 @@ export default function AdminSidebar({
 }) {
   const locale = useLocale() as Locale;
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const labels = fieldnames[locale];
-  const notificationCount = 0;
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  };
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -221,6 +233,15 @@ export default function AdminSidebar({
           </span>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Notification panel */}
+            <NotificationPanel
+              notifications={notifications}
+              onMarkAllRead={handleMarkAllRead}
+              bellLabel={labels.nav_notifications}
+              title={labels.nav_notifications}
+              markAllReadLabel={labels.notifications_mark_all_read}
+              emptyLabel={labels.notifications_empty}
+            />
             {/* Notification bell */}
             <Button
               variant="ghost"

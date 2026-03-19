@@ -1,6 +1,21 @@
 import { cn } from "@/lib/utils";
 
-type NotificationType = "doc" | "alert" | "payment" | "task" | "msg";
+export type NotificationType =
+  | "document"
+  | "payment"
+  | "task"
+  | "escalation"
+  | "message"
+  | "system";
+
+const dotColors: Record<NotificationType, string> = {
+  document: "bg-primary",
+  payment: "bg-accent",
+  task: "bg-warning",
+  escalation: "bg-destructive",
+  message: "bg-primary",
+  system: "bg-muted-foreground",
+};
 
 const dotColors: Record<NotificationType, string> = {
   doc: "bg-info",
@@ -20,9 +35,15 @@ export function NotificationDot({
   const color = dotColors[type as NotificationType] ?? "bg-muted-foreground";
 
   return (
-    <div
-      className={cn("h-2 w-2 shrink-0 rounded-full", color, className)}
+    <span
+      className={cn(
+        "inline-block h-2 w-2 shrink-0 rounded-full",
+        dotColors[type],
+        className
+      )}
       aria-hidden="true"
+      role="status"
+      aria-label={`${type} notification`}
     />
   );
 }

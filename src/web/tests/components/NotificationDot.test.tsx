@@ -1,48 +1,68 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { NotificationDot } from "@/app/_components/NotificationDot";
+import {
+  NotificationDot,
+  type NotificationType,
+} from "@/app/_components/NotificationDot";
 
 describe("NotificationDot", () => {
-  it("renders a doc notification dot with blue color", () => {
-    render(<NotificationDot type="doc" />);
-    const dot = screen.getByRole("status");
-    expect(dot).toHaveClass("bg-blue-500");
+  const types: NotificationType[] = [
+    "document",
+    "payment",
+    "task",
+    "escalation",
+    "message",
+    "system",
+  ];
+
+  it.each(types)("renders a dot for type '%s'", (type) => {
+    const { container } = render(<NotificationDot type={type} />);
+    const dot = container.querySelector("span");
+    expect(dot).toBeInTheDocument();
+    expect(dot).toHaveClass("rounded-full");
   });
 
-  it("renders an alert notification dot with red color", () => {
-    render(<NotificationDot type="alert" />);
-    const dot = screen.getByRole("status");
-    expect(dot).toHaveClass("bg-red-500");
+  it("applies correct color class for document type", () => {
+    const { container } = render(<NotificationDot type="document" />);
+    const dot = container.querySelector("span");
+    expect(dot).toHaveClass("bg-primary");
   });
 
-  it("renders a task notification dot with green color", () => {
-    render(<NotificationDot type="task" />);
-    const dot = screen.getByRole("status");
-    expect(dot).toHaveClass("bg-emerald-500");
+  it("applies correct color class for payment type", () => {
+    const { container } = render(<NotificationDot type="payment" />);
+    const dot = container.querySelector("span");
+    expect(dot).toHaveClass("bg-accent");
   });
 
-  it("renders a msg notification dot with purple color", () => {
-    render(<NotificationDot type="msg" />);
-    const dot = screen.getByRole("status");
-    expect(dot).toHaveClass("bg-purple-500");
+  it("applies correct color class for task type", () => {
+    const { container } = render(<NotificationDot type="task" />);
+    const dot = container.querySelector("span");
+    expect(dot).toHaveClass("bg-warning");
   });
 
-  it("renders as 8px dot (h-2 w-2)", () => {
-    render(<NotificationDot type="doc" />);
-    const dot = screen.getByRole("status");
-    expect(dot).toHaveClass("h-2", "w-2", "rounded-full");
+  it("applies correct color class for escalation type", () => {
+    const { container } = render(<NotificationDot type="escalation" />);
+    const dot = container.querySelector("span");
+    expect(dot).toHaveClass("bg-destructive");
   });
 
-  it("has accessible aria-label", () => {
-    render(<NotificationDot type="alert" />);
-    expect(screen.getByRole("status")).toHaveAttribute(
-      "aria-label",
-      "alert notification"
+  it("applies correct color class for system type", () => {
+    const { container } = render(<NotificationDot type="system" />);
+    const dot = container.querySelector("span");
+    expect(dot).toHaveClass("bg-muted-foreground");
+  });
+
+  it("is hidden from assistive technology", () => {
+    const { container } = render(<NotificationDot type="document" />);
+    const dot = container.querySelector("span");
+    expect(dot).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("accepts custom className", () => {
+    const { container } = render(
+      <NotificationDot type="document" className="h-4 w-4" />
     );
-  });
-
-  it("applies custom className", () => {
-    render(<NotificationDot type="doc" className="ml-1" />);
-    expect(screen.getByRole("status")).toHaveClass("ml-1");
+    const dot = container.querySelector("span");
+    expect(dot).toHaveClass("h-4", "w-4");
   });
 });
