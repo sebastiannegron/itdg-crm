@@ -24,6 +24,8 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     }
 
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<Client> Clients => Set<Client>();
+    public DbSet<ClientTier> ClientTiers => Set<ClientTier>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
