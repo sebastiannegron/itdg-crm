@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Itdg.Crm.Api.Domain\Itdg.Crm.Api.Domain.csproj" />
+    <ProjectReference Include="..\Itdg.Crm.Api.Diagnostics\Itdg.Crm.Api.Diagnostics.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

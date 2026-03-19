@@ -1,0 +1,55 @@
+name: Task
+description: A development task tied to a story
+title: "[Task] "
+labels: ["task", "phase:mvp"]
+body:
+  - type: input
+    id: story
+    attributes:
+      label: Parent Story
+      description: The story this task belongs to
+      placeholder: "Story 0.1.1"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to be done
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: How to verify this task is complete
+    validations:
+      required: true
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - foundation
+        - infra
+        - auth
+        - clients
+        - documents
+        - communications
+        - portal
+        - notifications
+        - dashboard
+        - settings
+        - audit
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer
+      options:
+        - backend
+        - frontend
+        - fullstack
+    validations:
+      required: true
