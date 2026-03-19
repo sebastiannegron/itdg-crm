@@ -12,7 +12,7 @@ This is a CRM platform for a tax consulting practice in Puerto Rico. It has two 
 - **Backend API** (`src/api/`) — .NET 9 / ASP.NET Core Minimal API using Clean Architecture + Custom CQRS
 - **Frontend** (`src/web/`) — Next.js 16 / React 19 / TypeScript using App Router
 
-The system integrates with Google Workspace (Gmail, Calendar, Drive), Microsoft Entra ID, Azure OpenAI, and SendGrid.
+The system integrates with Google Workspace (Gmail, Calendar, Drive), Microsoft Entra ID, Azure OpenAI, and Microsoft Graph API (email delivery).
 
 ---
 
