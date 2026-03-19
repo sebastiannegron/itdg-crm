@@ -1,7 +1,8 @@
 export const fieldnames = {
   "en-pr": {
-    app_name: "ITDG CRM Platform",
-    app_name_short: "ITDG",
+    app_name: "Raposo & Associates CRM",
+    app_name_short: "R&A",
+    app_subtitle: "Tax Consulting",
     nav_dashboard: "Dashboard",
     nav_clients: "Clients",
     nav_documents: "Documents",
@@ -22,8 +23,9 @@ export const fieldnames = {
     email_invalid_error: "Invalid email address",
   },
   "es-pr": {
-    app_name: "ITDG CRM Plataforma",
-    app_name_short: "ITDG",
+    app_name: "Raposo & Associates CRM",
+    app_name_short: "R&A",
+    app_subtitle: "Consultoría Contributiva",
     nav_dashboard: "Tablero",
     nav_clients: "Clientes",
     nav_documents: "Documentos",

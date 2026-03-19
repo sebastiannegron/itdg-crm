@@ -73,8 +73,8 @@ function NavLink({
       className={cn(
         "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
         isActive
-          ? "bg-primary/10 text-primary"
-          : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+          ? "bg-sidebar-accent/20 text-sidebar-accent"
+          : "text-sidebar-foreground/70 hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground",
         collapsed && "justify-center px-2"
       )}
       aria-current={isActive ? "page" : undefined}
@@ -193,8 +193,8 @@ export default function AdminSidebar({
                   <SheetTitle className="text-left text-primary">
                     {labels.app_name_short}
                   </SheetTitle>
-                  <SheetDescription className="sr-only">
-                    {labels.app_name}
+                  <SheetDescription className="text-left text-xs text-muted-foreground">
+                    {labels.app_subtitle}
                   </SheetDescription>
                 </SheetHeader>
                 <nav className="flex flex-col gap-1 p-3" aria-label="Main">
@@ -232,6 +232,14 @@ export default function AdminSidebar({
                 </Badge>
               )}
             </Button>
+
+            {/* User avatar */}
+            <div
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar text-xs font-semibold text-sidebar-foreground"
+              aria-label="User avatar"
+            >
+              RA
+            </div>
           </div>
         </header>
 
@@ -239,21 +247,26 @@ export default function AdminSidebar({
           {/* Desktop sidebar (lg+) */}
           <aside
             className={cn(
-              "hidden lg:flex lg:flex-col lg:border-r lg:border-border lg:bg-card",
+              "hidden lg:flex lg:flex-col bg-sidebar text-sidebar-foreground",
               collapsed ? "lg:w-16" : "lg:w-64"
             )}
           >
             {/* Sidebar header with brand */}
             <div
               className={cn(
-                "flex h-14 items-center border-b border-border px-4",
+                "flex h-14 items-center border-b border-sidebar-foreground/10 px-4",
                 collapsed ? "justify-center" : "justify-between"
               )}
             >
               {!collapsed && (
-                <span className="font-semibold text-primary">
-                  {labels.app_name_short}
-                </span>
+                <div className="flex flex-col">
+                  <span className="font-semibold text-sidebar-foreground">
+                    {labels.app_name_short}
+                  </span>
+                  <span className="text-xs text-sidebar-foreground/60">
+                    {labels.app_subtitle}
+                  </span>
+                </div>
               )}
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -266,7 +279,7 @@ export default function AdminSidebar({
                         ? labels.nav_expand_sidebar
                         : labels.nav_collapse_sidebar
                     }
-                    className="h-8 w-8"
+                    className="h-8 w-8 text-sidebar-foreground/70 hover:bg-sidebar-foreground/10 hover:text-sidebar-foreground"
                   >
                     {collapsed ? (
                       <PanelLeftOpen className="h-4 w-4" />

@@ -890,28 +890,33 @@ export async function createClient(formData: FormData) {
 
 ### Color Palette
 
-Built on shadcn/ui CSS variables in `tailwind.config.ts` and `globals.css`:
+Built on shadcn/ui CSS variables in `globals.css` using Tailwind v4 `@theme inline`:
+
+R&A (Raposo & Associates) brand: orange primary (#E85320), navy sidebar (#1a2744), blue info (#0088C8).
 
 | Token | Light Mode | Dark Mode | Usage |
 |---|---|---|---|
-| `--primary` | `hsl(220, 70%, 45%)` | `hsl(220, 70%, 60%)` | Buttons, active nav, links — professional blue |
+| `--primary` | `hsl(15, 81%, 52%)` | `hsl(15, 81%, 60%)` | Buttons, active nav, links — R&A orange |
 | `--primary-foreground` | `hsl(0, 0%, 100%)` | `hsl(0, 0%, 100%)` | Text on primary backgrounds |
-| `--secondary` | `hsl(215, 20%, 95%)` | `hsl(215, 20%, 18%)` | Subtle backgrounds, secondary buttons |
+| `--secondary` | `hsl(210, 40%, 96%)` | `hsl(215, 20%, 18%)` | Subtle backgrounds, secondary buttons |
 | `--accent` | `hsl(160, 60%, 40%)` | `hsl(160, 60%, 50%)` | Success states, positive metrics, completed tasks |
 | `--destructive` | `hsl(0, 72%, 51%)` | `hsl(0, 72%, 61%)` | Errors, failed payments, delete actions |
+| `--info` | `hsl(199, 100%, 39%)` | `hsl(199, 100%, 50%)` | Informational states, links, highlights |
 | `--warning` | `hsl(38, 92%, 50%)` | `hsl(38, 92%, 60%)` | Deadline approaching, pending items, alerts |
 | `--muted` | `hsl(215, 16%, 93%)` | `hsl(215, 16%, 16%)` | Disabled elements, placeholder text |
-| `--background` | `hsl(0, 0%, 100%)` | `hsl(220, 15%, 10%)` | Page background |
+| `--sidebar` | `hsl(221, 45%, 18%)` | `hsl(221, 45%, 14%)` | Admin sidebar background — R&A navy |
+| `--sidebar-accent` | `hsl(15, 81%, 52%)` | `hsl(15, 81%, 60%)` | Active sidebar nav items — R&A orange |
+| `--background` | `hsl(210, 40%, 96%)` | `hsl(220, 15%, 10%)` | Page background — light slate |
 | `--card` | `hsl(0, 0%, 100%)` | `hsl(220, 15%, 13%)` | Card and widget surfaces |
 | `--border` | `hsl(215, 20%, 88%)` | `hsl(215, 20%, 22%)` | Borders, dividers |
-| `--ring` | `hsl(220, 70%, 45%)` | `hsl(220, 70%, 60%)` | Focus rings |
+| `--ring` | `hsl(15, 81%, 52%)` | `hsl(15, 81%, 60%)` | Focus rings — matches primary |
 
 **Tier colors** (for client classification badges):
 
 | Tier | Color | Token |
 |---|---|---|
 | Tier 1 (High) | Gold | `hsl(45, 93%, 47%)` |
-| Tier 2 (Medium) | Blue | `hsl(220, 70%, 55%)` |
+| Tier 2 (Medium) | Blue | `hsl(199, 100%, 39%)` |
 | Tier 3 (Standard) | Slate | `hsl(215, 16%, 55%)` |
 
 **Status colors:**
