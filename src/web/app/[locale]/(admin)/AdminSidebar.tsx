@@ -42,6 +42,12 @@ const navItems: NavItem[] = [
   { href: "/tasks", labelKey: "nav_tasks", icon: CheckSquare },
 ];
 
+const settingsItem: NavItem = {
+  href: "/settings",
+  labelKey: "nav_settings",
+  icon: Settings,
+};
+
 function DesktopNavLink({
   item,
   locale,
@@ -83,7 +89,7 @@ function TabletNavLink({
   locale: Locale;
   pathname: string;
 }) {
-  const label = fieldnames[locale][item.labelKey];
+  const label = fieldnames[locale][item.mobileLabelKey ?? item.labelKey];
   const isActive =
     pathname === item.href || pathname.startsWith(`${item.href}/`);
 
@@ -159,9 +165,53 @@ export default function AdminSidebar({
     <TooltipProvider delayDuration={0}>
       <div className="flex min-h-screen flex-col">
         {/* Header */}
-        <header className="sticky top-0 z-40 flex h-[50px] items-center border-b border-border bg-card px-4">
-          {/* App name (mobile + tablet) */}
-          <span className="text-sm font-bold text-primary lg:hidden">
+        <header className="sticky top-0 z-40 flex h-14 items-center border-b border-border bg-card px-4">
+          {/* Tablet hamburger (md only) */}
+          <div className="hidden md:block lg:hidden">
+            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={labels.nav_open_menu}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-64 p-0">
+                <SheetHeader className="border-b border-border px-4 py-4">
+                  <SheetTitle className="text-left text-primary">
+                    {labels.app_name_short}
+                  </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    {labels.app_name}
+                  </SheetDescription>
+                </SheetHeader>
+                <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main">
+                  {navItems.map((item) => (
+                    <SheetNavLink
+                      key={item.href}
+                      item={item}
+                      locale={locale}
+                      pathname={pathname}
+                      onNavigate={() => setSheetOpen(false)}
+                    />
+                  ))}
+                </nav>
+                <div className="border-t border-border p-3">
+                  <SheetNavLink
+                    item={settingsItem}
+                    locale={locale}
+                    pathname={pathname}
+                    onNavigate={() => setSheetOpen(false)}
+                  />
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
+
+          {/* App name in header (mobile + tablet) */}
+          <span className="font-semibold text-primary lg:hidden">
             {labels.app_name_short}
           </span>
 

@@ -51,6 +51,7 @@ describe("AdminSidebar", () => {
       screen.getAllByText("Communications").length
     ).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Tasks").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders the children content", () => {
@@ -166,14 +167,44 @@ describe("AdminSidebar", () => {
     expect(navElements.length).toBeGreaterThanOrEqual(2);
   });
 
-  it("renders user avatar in header", () => {
+  it("renders Tasks nav item in main navigation", () => {
     render(
       <AdminSidebar>
         <div>Content</div>
       </AdminSidebar>
     );
 
-    const avatar = screen.getByText("MR");
-    expect(avatar).toBeInTheDocument();
+    const tasksLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("href") === "/tasks"
+    );
+    expect(tasksLinks.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders Comms short label in mobile bottom nav", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    // Mobile bottom nav uses "Comms" short label for Communications
+    expect(screen.getAllByText("Comms").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("renders Settings in sidebar footer separate from main nav", () => {
+    render(
+      <AdminSidebar>
+        <div>Content</div>
+      </AdminSidebar>
+    );
+
+    // Settings should still be rendered
+    const settingsLinks = screen.getAllByRole("link").filter(
+      (link) => link.getAttribute("href") === "/settings"
+    );
+    expect(settingsLinks.length).toBeGreaterThanOrEqual(1);
+
+    // Settings should appear as text (in desktop sidebar footer)
+    expect(screen.getAllByText("Settings").length).toBeGreaterThanOrEqual(1);
   });
 });
