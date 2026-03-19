@@ -381,6 +381,19 @@ z.string().min(1).refine(val => !codeRegex.test(val) && !urlRegex.test(val), "In
 
 ---
 
+## Dependency Management — CRITICAL
+
+**Frontend (`src/web/`):**
+- After adding, removing, or changing ANY dependency in `package.json`, you MUST run `npm install` from the `src/web/` directory to regenerate `package-lock.json`
+- ALWAYS commit both `package.json` AND `package-lock.json` together in the same commit
+- Never manually edit `package-lock.json` — only `npm install` should modify it
+- CI uses `npm ci` which requires `package.json` and `package-lock.json` to be in sync — if they are not, the build will fail
+- Before pushing, verify: `cd src/web && npm ci` succeeds locally
+
+**Backend (`src/api/`):**
+- After adding NuGet packages, verify `dotnet restore` succeeds
+- Before pushing, verify: `cd src/api && dotnet build` succeeds
+
 ## Git & PR Conventions
 
 - Branch naming: `feature/{issue-number}-short-description` or `bugfix/{issue-number}-short-description`
@@ -420,3 +433,5 @@ z.string().min(1).refine(val => !codeRegex.test(val) && !urlRegex.test(val), "In
 12. Adding `"use client"` to a component that doesn't need interactivity
 13. Forgetting to add the global tenant filter on a new entity
 14. Skipping `codeRegex`/`urlRegex` validation on user text inputs
+15. **Forgetting to run `npm install` after changing `package.json`** — CI uses `npm ci` which FAILS if the lock file is out of sync. Always run `npm install` and commit both files together
+16. Adding a NuGet package without verifying `dotnet restore` and `dotnet build` succeed

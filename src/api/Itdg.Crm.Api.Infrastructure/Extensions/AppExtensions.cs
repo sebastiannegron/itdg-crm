@@ -52,6 +52,8 @@ public static class AppExtensions
         // Repositories
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<ITemplateRepository, TemplateRepository>();
+        services.AddScoped<IClientRepository, ClientRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         return services;
     }

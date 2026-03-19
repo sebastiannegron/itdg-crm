@@ -23,8 +23,13 @@ public class CrmDbContext : DbContext, IApplicationDbContext
         CurrentTenantId = ResolveTenantId(tenantProvider);
     }
 
+    public DbSet<Tenant> Tenants => Set<Tenant>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<CommunicationTemplate> CommunicationTemplates => Set<CommunicationTemplate>();
+    public DbSet<Client> Clients => Set<Client>();
+    public DbSet<ClientTier> ClientTiers => Set<ClientTier>();
+    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
