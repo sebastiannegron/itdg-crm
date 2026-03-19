@@ -23,9 +23,12 @@ public class CrmDbContext : DbContext, IApplicationDbContext
         CurrentTenantId = ResolveTenantId(tenantProvider);
     }
 
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(CrmDbContext).Assembly);
         ApplyGlobalQueryFilters(modelBuilder);
     }
 
