@@ -3,6 +3,7 @@ namespace Itdg.Crm.Api.Infrastructure.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Identity.Web;
 using Itdg.Crm.Api.Infrastructure.Data;
+using Itdg.Crm.Api.Infrastructure.Interceptors;
 using Itdg.Crm.Api.Infrastructure.Data.Interceptors;
 using Itdg.Crm.Api.Infrastructure.Options;
 using Itdg.Crm.Api.Infrastructure.Repositories;
@@ -30,12 +31,16 @@ public static class AppExtensions
       
         // Interceptors
         services.AddSingleton<AuditableEntityInterceptor>();
+        services.AddScoped<AuditSaveChangesInterceptor>();
 
         // Database
         services.AddDbContext<CrmDbContext>((serviceProvider, options) =>
         {
-            options.UseSqlServer(configuration.GetConnectionString(DatabaseOptions.ConnectionStringName))
-                .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
+            options.UseSqlServer(configuration.GetConnectionString("CrmDb"))
+              .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
+            options.AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>());
+//             options.UseSqlServer(configuration.GetConnectionString(DatabaseOptions.ConnectionStringName))
+//                 .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
         });
 
         services.AddScoped<IApplicationDbContext>(provider =>
