@@ -62,26 +62,22 @@ public static class AppExtensions
         services.AddScoped<IMessageRepository, MessageRepository>();
 
         // Command handlers
-        services.AddScoped<ICommandHandler<Itdg.Crm.Api.Application.Commands.SendPortalMessage>, Itdg.Crm.Api.Application.CommandHandlers.SendPortalMessageHandler>();
-        services.AddScoped<ICommandHandler<Itdg.Crm.Api.Application.Commands.MarkMessageAsRead>, Itdg.Crm.Api.Application.CommandHandlers.MarkMessageAsReadHandler>();
-
-        // Query handlers
-        services.AddScoped<IQueryHandler<Itdg.Crm.Api.Application.Queries.GetPortalMessages, IEnumerable<Itdg.Crm.Api.Application.Dtos.MessageDto>>, Itdg.Crm.Api.Application.QueryHandlers.GetPortalMessagesHandler>();
-        services.AddScoped<IQueryHandler<Itdg.Crm.Api.Application.Queries.GetPortalMessageById, Itdg.Crm.Api.Application.Dtos.MessageDto>, Itdg.Crm.Api.Application.QueryHandlers.GetPortalMessageByIdHandler>();
-
-        // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
         services.AddScoped<ICommandHandler<UpdateClient>, UpdateClientHandler>();
         services.AddScoped<ICommandHandler<DeleteClient>, DeleteClientHandler>();
         services.AddScoped<ICommandHandler<CreateTemplate>, CreateTemplateHandler>();
         services.AddScoped<ICommandHandler<UpdateTemplate>, UpdateTemplateHandler>();
         services.AddScoped<ICommandHandler<RetireTemplate>, RetireTemplateHandler>();
+        services.AddScoped<ICommandHandler<SendPortalMessage>, SendPortalMessageHandler>();
+        services.AddScoped<ICommandHandler<MarkMessageAsRead>, MarkMessageAsReadHandler>();
       
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
         services.AddScoped<IQueryHandler<GetClients, PaginatedResultDto<ClientDto>>, GetClientsHandler>();
         services.AddScoped<IQueryHandler<GetTemplates, IEnumerable<CommunicationTemplateDto>>, GetTemplatesHandler>();
         services.AddScoped<IQueryHandler<GetTemplateById, CommunicationTemplateDto>, GetTemplateByIdHandler>();
+        services.AddScoped<IQueryHandler<GetPortalMessages, IEnumerable<MessageDto>>, GetPortalMessagesHandler>();
+        services.AddScoped<IQueryHandler<GetPortalMessageById, MessageDto>, GetPortalMessageByIdHandler>();
 
         return services;
     }
