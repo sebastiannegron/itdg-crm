@@ -94,3 +94,37 @@ export async function updateClient(
     body: JSON.stringify(params),
   });
 }
+
+export interface ClientAssignmentDto {
+  user_id: string;
+  display_name: string;
+  email: string;
+  assigned_at: string;
+}
+
+export async function getClientAssignments(
+  clientId: string,
+): Promise<ClientAssignmentDto[]> {
+  return apiFetch<ClientAssignmentDto[]>(
+    `/api/v1/Clients/${clientId}/Assignments`,
+  );
+}
+
+export async function assignClient(
+  clientId: string,
+  userId: string,
+): Promise<void> {
+  return apiFetch<void>(`/api/v1/Clients/${clientId}/Assignments`, {
+    method: "POST",
+    body: JSON.stringify({ user_id: userId }),
+  });
+}
+
+export async function unassignClient(
+  clientId: string,
+  userId: string,
+): Promise<void> {
+  return apiFetch<void>(`/api/v1/Clients/${clientId}/Assignments/${userId}`, {
+    method: "DELETE",
+  });
+}

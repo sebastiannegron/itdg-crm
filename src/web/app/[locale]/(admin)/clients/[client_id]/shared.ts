@@ -3,11 +3,12 @@ import type {
   ClientDto,
   CreateClientParams,
   UpdateClientParams,
+  ClientAssignmentDto,
 } from "@/server/Services/clientService";
 import { codeRegex, urlRegex } from "@/app/[locale]/_shared/app-enums";
 import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 
-export type { ClientDto, CreateClientParams, UpdateClientParams };
+export type { ClientDto, CreateClientParams, UpdateClientParams, ClientAssignmentDto };
 
 export const CLIENT_STATUSES = ["Active", "Inactive", "Suspended"] as const;
 export type ClientStatus = (typeof CLIENT_STATUSES)[number];

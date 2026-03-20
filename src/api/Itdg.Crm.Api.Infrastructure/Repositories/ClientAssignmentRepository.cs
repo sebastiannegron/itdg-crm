@@ -19,4 +19,13 @@ public class ClientAssignmentRepository : GenericRepository<ClientAssignment>, I
         return await Context.Set<ClientAssignment>()
             .FirstOrDefaultAsync(ca => ca.ClientId == clientId && ca.UserId == userId, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<ClientAssignment>> GetByClientIdWithUserAsync(Guid clientId, CancellationToken cancellationToken = default)
+    {
+        return await Context.Set<ClientAssignment>()
+            .Include(ca => ca.User)
+            .Where(ca => ca.ClientId == clientId)
+            .OrderBy(ca => ca.AssignedAt)
+            .ToListAsync(cancellationToken);
+    }
 }

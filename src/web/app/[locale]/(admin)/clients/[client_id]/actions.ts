@@ -4,8 +4,12 @@ import { Span, SpanStatusCode, trace } from "@opentelemetry/api";
 import {
   getClientById,
   updateClient as updateClientService,
+  getClientAssignments as getClientAssignmentsService,
+  assignClient as assignClientService,
+  unassignClient as unassignClientService,
   type ClientDto,
   type UpdateClientParams,
+  type ClientAssignmentDto,
 } from "@/server/Services/clientService";
 
 const tracer = trace.getTracer("web");
@@ -58,6 +62,101 @@ export async function updateClientAction(
       return {
         success: true,
         message: "Client updated successfully",
+      };
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      span.recordException(error);
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: error.message,
+      });
+      return {
+        success: false,
+        message: error.message,
+      };
+    } finally {
+      span.end();
+    }
+  });
+}
+
+export async function fetchClientAssignments(
+  clientId: string,
+): Promise<ActionResult<ClientAssignmentDto[]>> {
+  return tracer.startActiveSpan(
+    "Fetch Client Assignments",
+    async (span: Span) => {
+      try {
+        span.setAttribute("client_id", clientId);
+        const assignments = await getClientAssignmentsService(clientId);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Assignments fetched successfully",
+          data: assignments,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function assignClientAction(
+  clientId: string,
+  userId: string,
+): Promise<ActionResult> {
+  return tracer.startActiveSpan("Assign Client", async (span: Span) => {
+    try {
+      span.setAttribute("client_id", clientId);
+      span.setAttribute("user_id", userId);
+      await assignClientService(clientId, userId);
+      span.setStatus({ code: SpanStatusCode.OK });
+      return {
+        success: true,
+        message: "Associate assigned successfully",
+      };
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      span.recordException(error);
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: error.message,
+      });
+      return {
+        success: false,
+        message: error.message,
+      };
+    } finally {
+      span.end();
+    }
+  });
+}
+
+export async function unassignClientAction(
+  clientId: string,
+  userId: string,
+): Promise<ActionResult> {
+  return tracer.startActiveSpan("Unassign Client", async (span: Span) => {
+    try {
+      span.setAttribute("client_id", clientId);
+      span.setAttribute("user_id", userId);
+      await unassignClientService(clientId, userId);
+      span.setStatus({ code: SpanStatusCode.OK });
+      return {
+        success: true,
+        message: "Associate removed successfully",
       };
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err));
