@@ -2,8 +2,9 @@ import { z } from "zod";
 import { codeRegex, urlRegex } from "@/app/[locale]/_shared/app-enums";
 import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import type { ClientTierDto } from "@/server/Services/tierService";
+import type { DocumentCategoryDto } from "@/server/Services/documentCategoryService";
 
-export type { ClientTierDto };
+export type { ClientTierDto, DocumentCategoryDto };
 
 function safeText(locale: Locale) {
   const t = fieldnames[locale];
@@ -30,3 +31,32 @@ export function TierSchema(locale: Locale) {
 }
 
 export type TierFormData = z.infer<ReturnType<typeof TierSchema>>;
+
+export function DocumentCategorySchema(locale: Locale) {
+  const msg = safeText(locale);
+
+  return z.object({
+    name: z
+      .string()
+      .min(1, msg.required)
+      .max(100)
+      .refine(
+        (val) => !codeRegex.test(val) && !urlRegex.test(val),
+        msg.invalidInput,
+      ),
+    naming_convention: z
+      .string()
+      .max(200)
+      .refine(
+        (val) => !codeRegex.test(val) && !urlRegex.test(val),
+        msg.invalidInput,
+      )
+      .optional()
+      .or(z.literal("")),
+    sort_order: z.number().int().min(0),
+  });
+}
+
+export type DocumentCategoryFormData = z.infer<
+  ReturnType<typeof DocumentCategorySchema>
+>;

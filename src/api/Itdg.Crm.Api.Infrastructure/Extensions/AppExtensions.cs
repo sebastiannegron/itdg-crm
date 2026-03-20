@@ -121,6 +121,10 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<CreateTier>, CreateTierHandler>();
         services.AddScoped<ICommandHandler<UpdateTier>, UpdateTierHandler>();
         services.AddScoped<ICommandHandler<SaveDashboardLayout>, SaveDashboardLayoutHandler>();
+        services.AddScoped<ICommandHandler<CreateDocumentCategory>, CreateDocumentCategoryHandler>();
+        services.AddScoped<ICommandHandler<UpdateDocumentCategory>, UpdateDocumentCategoryHandler>();
+        services.AddScoped<ICommandHandler<DeleteDocumentCategory>, DeleteDocumentCategoryHandler>();
+        services.AddScoped<ICommandHandler<ReorderDocumentCategories>, ReorderDocumentCategoriesHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -136,6 +140,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetClientAssignments, IEnumerable<ClientAssignmentDto>>, GetClientAssignmentsHandler>();
         services.AddScoped<IQueryHandler<GetDashboardSummary, DashboardSummaryDto>, GetDashboardSummaryHandler>();
         services.AddScoped<IQueryHandler<GetDashboardLayout, DashboardLayoutDto?>, GetDashboardLayoutHandler>();
+        services.AddScoped<IQueryHandler<GetDocumentCategories, IEnumerable<DocumentCategoryDto>>, GetDocumentCategoriesHandler>();
 
         return services;
     }
