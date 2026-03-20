@@ -257,6 +257,28 @@ export const fieldnames = {
     users_role_associate: "Associate",
     users_role_client_portal: "Client Portal",
     users_never: "Never",
+    settings_notifications_title: "Notification Preferences",
+    settings_notifications_subtitle:
+      "Control how and when you receive notifications",
+    settings_notifications_event_type: "Event Type",
+    settings_notifications_in_app: "In-App",
+    settings_notifications_email: "Email",
+    settings_notifications_save: "Save Preferences",
+    settings_notifications_saving: "Saving…",
+    settings_notifications_save_success:
+      "Notification preferences saved successfully",
+    settings_notifications_save_error:
+      "Failed to save preferences. Please try again.",
+    settings_notifications_event_document_uploaded: "Document Uploaded",
+    settings_notifications_event_payment_completed: "Payment Completed",
+    settings_notifications_event_payment_failed: "Payment Failed",
+    settings_notifications_event_task_assigned: "Task Assigned",
+    settings_notifications_event_task_due_soon: "Task Due Soon",
+    settings_notifications_event_escalation_received: "Escalation Received",
+    settings_notifications_event_portal_message_received:
+      "Portal Message Received",
+    settings_notifications_event_system_alert: "System Alert",
+    settings_notifications_back: "Back to Settings",
   },
   "es-pr": {
     app_name: "R&A Plataforma CRM",
@@ -516,6 +538,28 @@ export const fieldnames = {
     users_role_associate: "Asociado",
     users_role_client_portal: "Portal del Cliente",
     users_never: "Nunca",
+    settings_notifications_title: "Preferencias de Notificación",
+    settings_notifications_subtitle:
+      "Controla cómo y cuándo recibes notificaciones",
+    settings_notifications_event_type: "Tipo de Evento",
+    settings_notifications_in_app: "En App",
+    settings_notifications_email: "Correo",
+    settings_notifications_save: "Guardar Preferencias",
+    settings_notifications_saving: "Guardando…",
+    settings_notifications_save_success:
+      "Preferencias de notificación guardadas exitosamente",
+    settings_notifications_save_error:
+      "Error al guardar preferencias. Inténtelo de nuevo.",
+    settings_notifications_event_document_uploaded: "Documento Subido",
+    settings_notifications_event_payment_completed: "Pago Completado",
+    settings_notifications_event_payment_failed: "Pago Fallido",
+    settings_notifications_event_task_assigned: "Tarea Asignada",
+    settings_notifications_event_task_due_soon: "Tarea Por Vencer",
+    settings_notifications_event_escalation_received: "Escalación Recibida",
+    settings_notifications_event_portal_message_received:
+      "Mensaje del Portal Recibido",
+    settings_notifications_event_system_alert: "Alerta del Sistema",
+    settings_notifications_back: "Volver a Configuración",
   },
 } as const;
 
