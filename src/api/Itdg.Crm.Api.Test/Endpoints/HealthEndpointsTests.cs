@@ -22,6 +22,8 @@ public class HealthEndpointsTests : IClassFixture<WebApplicationFactory<Program>
                     ["AzureAd:Audience"] = "api://00000000-0000-0000-0000-000000000000",
                     ["Gmail:ClientId"] = "test-client-id",
                     ["Gmail:ClientSecret"] = "test-client-secret",
+                    ["GoogleDrive:ClientId"] = "test-client-id",
+                    ["GoogleDrive:ClientSecret"] = "test-client-secret",
                 });
             });
 
