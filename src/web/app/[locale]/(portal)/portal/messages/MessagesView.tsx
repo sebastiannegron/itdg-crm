@@ -226,7 +226,7 @@ export default function MessagesView({ initialMessages }: MessagesViewProps) {
               htmlFor="compose-body"
               className="block text-sm font-medium text-foreground mb-1"
             >
-              {t.messages_reply}
+              {t.messages_body}
             </label>
             <textarea
               id="compose-body"
