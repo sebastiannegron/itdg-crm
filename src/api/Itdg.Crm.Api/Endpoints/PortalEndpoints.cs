@@ -71,7 +71,7 @@ public static class PortalEndpoints
             }
 
             var clientId = GetClientIdFromClaims(httpContext);
-            var senderId = clientId;
+            var senderId = clientId; // Portal messages: client is the sender
             string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
 
             var command = new SendPortalMessage(clientId, senderId, request.Subject, request.Body);
