@@ -143,8 +143,16 @@ jobs:
           GH_TOKEN: ${{ secrets.COPILOT_TRIGGER_PAT }}
         run: |
           ISSUE=${{ steps.find.outputs.issue }}
-          echo "Assigning Copilot to #$ISSUE..."
-          gh issue edit "$ISSUE" --add-assignee "@copilot"
+          echo "Assigning Copilot (claude-opus-4) to #$ISSUE..."
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "/repos/${{ github.repository }}/issues/${ISSUE}/assignees" \
+            -f 'assignees[]=copilot-swe-agent[bot]' \
+            -f 'agent_assignment[target_repo]=${{ github.repository }}' \
+            -f 'agent_assignment[base_branch]=main' \
+            -f 'agent_assignment[model]=claude-opus-4'
           echo "Successfully assigned Copilot to #$ISSUE"
 
       # Save cooldown timestamp only after a successful assignment
