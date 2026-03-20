@@ -35,16 +35,16 @@ public class DocumentCategoryConfiguration : IEntityTypeConfiguration<DocumentCa
             .HasDatabaseName("IX_DocumentCategory_TenantId_Name");
 
         builder.HasData(
-            CreateSeed(BankStatementsId, "Bank Statements", "{ClientName}_BankStatement_{Date}"),
-            CreateSeed(InvoicesId, "Invoices", "{ClientName}_Invoice_{Date}"),
-            CreateSeed(ReportsId, "Reports", "{ClientName}_Report_{Date}"),
-            CreateSeed(TaxDocumentsId, "Tax Documents", "{ClientName}_TaxDoc_{Date}"),
-            CreateSeed(ContractsId, "Contracts", "{ClientName}_Contract_{Date}"),
-            CreateSeed(GeneralId, "General", "{ClientName}_General_{Date}")
+            CreateSeed(BankStatementsId, "Bank Statements", "{ClientName}_BankStatement_{Date}", 1),
+            CreateSeed(InvoicesId, "Invoices", "{ClientName}_Invoice_{Date}", 2),
+            CreateSeed(ReportsId, "Reports", "{ClientName}_Report_{Date}", 3),
+            CreateSeed(TaxDocumentsId, "Tax Documents", "{ClientName}_TaxDoc_{Date}", 4),
+            CreateSeed(ContractsId, "Contracts", "{ClientName}_Contract_{Date}", 5),
+            CreateSeed(GeneralId, "General", "{ClientName}_General_{Date}", 6)
         );
     }
 
-    private static DocumentCategory CreateSeed(Guid id, string name, string namingConvention)
+    private static DocumentCategory CreateSeed(Guid id, string name, string namingConvention, int sortOrder)
     {
         return new DocumentCategory
         {
@@ -53,6 +53,7 @@ public class DocumentCategoryConfiguration : IEntityTypeConfiguration<DocumentCa
             Name = name,
             NamingConvention = namingConvention,
             IsDefault = true,
+            SortOrder = sortOrder,
             CreatedAt = SeedDate,
             UpdatedAt = SeedDate
         };
