@@ -139,7 +139,9 @@ describe("SettingsView", () => {
     const cancelButton = screen.getByRole("button", { name: /Cancel/i });
     fireEvent.click(cancelButton);
 
-    // Create form label should be gone
-    expect(screen.queryByLabelText(/Name \*/)).not.toBeInTheDocument();
+    // Create form should be gone, verify by checking Cancel button is gone
+    expect(
+      screen.queryByRole("button", { name: /Cancel/i }),
+    ).not.toBeInTheDocument();
   });
 });

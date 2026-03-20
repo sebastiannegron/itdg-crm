@@ -167,6 +167,7 @@ export default function SettingsView({ initialTiers }: SettingsViewProps) {
                 createForm.reset({ name: "", sort_order: tiers.length + 1 });
               }}
               disabled={isPending}
+              aria-label={t.settings_tier_create}
             >
               <Plus className="h-4 w-4" />
               <span className="hidden sm:inline">
@@ -334,6 +335,7 @@ export default function SettingsView({ initialTiers }: SettingsViewProps) {
                         size="sm"
                         onClick={() => handleStartEdit(tier)}
                         disabled={isPending || editingTierId !== null}
+                        aria-label={`${t.settings_tier_edit} ${tier.name}`}
                       >
                         <Pencil className="h-4 w-4" />
                         <span className="hidden sm:inline">
