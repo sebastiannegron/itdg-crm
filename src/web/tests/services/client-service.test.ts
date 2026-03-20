@@ -1,5 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { getClients } from "@/server/Services/clientService";
+import {
+  getClients,
+  getClientById,
+  createClient,
+  updateClient,
+} from "@/server/Services/clientService";
 import { apiFetch } from "@/server/Services/api-client";
 
 vi.mock("@/server/Services/api-client", () => ({
@@ -112,5 +117,75 @@ describe("getClients", () => {
     expect(result.items).toHaveLength(1);
     expect(result.items[0].name).toBe("Acme Corp");
     expect(result.total_count).toBe(1);
+  });
+});
+
+describe("getClientById", () => {
+  it("calls apiFetch with client ID path", async () => {
+    const mockClient = {
+      client_id: "c1-uuid",
+      name: "Acme Corp",
+      contact_email: "info@acme.com",
+      phone: null,
+      address: null,
+      tier_id: null,
+      tier_name: null,
+      status: "Active",
+      industry_tag: null,
+      notes: null,
+      custom_fields: null,
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-06-01T00:00:00Z",
+    };
+    mockApiFetch.mockResolvedValue(mockClient);
+
+    const result = await getClientById("c1-uuid");
+
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/v1/Clients/c1-uuid");
+    expect(result.name).toBe("Acme Corp");
+  });
+});
+
+describe("createClient", () => {
+  it("calls apiFetch with POST method and body", async () => {
+    const mockResponse = {
+      client_id: "new-uuid",
+      name: "New Client",
+      contact_email: null,
+      phone: null,
+      address: null,
+      tier_id: null,
+      tier_name: null,
+      status: "Active",
+      industry_tag: null,
+      notes: null,
+      custom_fields: null,
+      created_at: "2024-01-01T00:00:00Z",
+      updated_at: "2024-01-01T00:00:00Z",
+    };
+    mockApiFetch.mockResolvedValue(mockResponse);
+
+    const params = { name: "New Client", status: "Active" };
+    const result = await createClient(params);
+
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/v1/Clients", {
+      method: "POST",
+      body: JSON.stringify(params),
+    });
+    expect(result.client_id).toBe("new-uuid");
+  });
+});
+
+describe("updateClient", () => {
+  it("calls apiFetch with PUT method and body", async () => {
+    mockApiFetch.mockResolvedValue(undefined);
+
+    const params = { name: "Updated Client", status: "Inactive" };
+    await updateClient("c1-uuid", params);
+
+    expect(mockApiFetch).toHaveBeenCalledWith("/api/v1/Clients/c1-uuid", {
+      method: "PUT",
+      body: JSON.stringify(params),
+    });
   });
 });
