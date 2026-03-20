@@ -1,5 +1,6 @@
 namespace Itdg.Crm.Api.Endpoints;
 
+using FluentValidation;
 using Itdg.Crm.Api.Application.Commands;
 using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Queries;
@@ -13,19 +14,21 @@ public static class PortalEndpoints
         group.WithTags("Portal");
 
         group.MapGet("/Messages", GetPortalMessagesEndpoint)
-            .RequireAuthorization()
+            .RequireAuthorization(policy => policy.RequireRole("Portal.Read", "Portal.ReadWrite"))
             .WithName("GetPortalMessages")
             .Produces<IEnumerable<MessageDto>>(StatusCodes.Status200OK);
 
         group.MapPost("/Messages", SendPortalMessageEndpoint)
-            .RequireAuthorization()
+            .RequireAuthorization(policy => policy.RequireRole("Portal.ReadWrite"))
             .WithName("SendPortalMessage")
-            .Produces(StatusCodes.Status201Created);
+            .Produces(StatusCodes.Status201Created)
+            .ProducesValidationProblem();
 
         group.MapPut("/Messages/{message_id}/Read", MarkMessageAsReadEndpoint)
-            .RequireAuthorization()
+            .RequireAuthorization(policy => policy.RequireRole("Portal.ReadWrite"))
             .WithName("MarkMessageAsRead")
-            .Produces(StatusCodes.Status204NoContent);
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return group;
     }
@@ -33,10 +36,8 @@ public static class PortalEndpoints
     private static async Task<IResult> GetPortalMessagesEndpoint(
         HttpContext httpContext,
         IQueryHandler<GetPortalMessages, IEnumerable<MessageDto>> handler,
-        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(nameof(PortalEndpoints));
         string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
         try
         {
@@ -44,17 +45,8 @@ public static class PortalEndpoints
             var result = await handler.HandleAsync(new GetPortalMessages(clientId), Guid.Parse(correlationId!), cancellationToken);
             return Results.Ok(result);
         }
-        catch (NotFoundException ex)
-        {
-            logger.LogWarning(ex, "Portal messages not found | CorrelationId: {CorrelationId}", correlationId);
-            return Results.Problem(
-                detail: ex.Message,
-                statusCode: StatusCodes.Status404NotFound,
-                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
-        }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to get portal messages | CorrelationId: {CorrelationId}", correlationId);
             return Results.Problem(
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
@@ -66,13 +58,18 @@ public static class PortalEndpoints
         HttpContext httpContext,
         SendPortalMessageRequest request,
         ICommandHandler<SendPortalMessage> handler,
-        ILoggerFactory loggerFactory,
+        IValidator<SendPortalMessageRequest> validator,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(nameof(PortalEndpoints));
         string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
         try
         {
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return Results.ValidationProblem(validationResult.ToDictionary());
+            }
+
             var clientId = GetClientIdFromClaims(httpContext);
             var senderId = clientId;
             string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
@@ -84,7 +81,6 @@ public static class PortalEndpoints
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to send portal message | CorrelationId: {CorrelationId}", correlationId);
             return Results.Problem(
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
@@ -96,10 +92,8 @@ public static class PortalEndpoints
         HttpContext httpContext,
         Guid message_id,
         ICommandHandler<MarkMessageAsRead> handler,
-        ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
-        var logger = loggerFactory.CreateLogger(nameof(PortalEndpoints));
         string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
         try
         {
@@ -113,7 +107,6 @@ public static class PortalEndpoints
         }
         catch (NotFoundException ex)
         {
-            logger.LogWarning(ex, "Message not found for mark as read | CorrelationId: {CorrelationId}", correlationId);
             return Results.Problem(
                 detail: ex.Message,
                 statusCode: StatusCodes.Status404NotFound,
@@ -121,7 +114,6 @@ public static class PortalEndpoints
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to mark message as read | CorrelationId: {CorrelationId}", correlationId);
             return Results.Problem(
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
@@ -139,3 +131,4 @@ public static class PortalEndpoints
         return clientId;
     }
 }
+
