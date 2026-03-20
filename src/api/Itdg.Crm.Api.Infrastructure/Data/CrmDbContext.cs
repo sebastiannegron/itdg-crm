@@ -30,6 +30,12 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     public DbSet<ClientTier> ClientTiers => Set<ClientTier>();
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
+    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<ClientAssignment> ClientAssignments => Set<ClientAssignment>();
+    public DbSet<Document> Documents => Set<Document>();
+    public DbSet<DocumentCategory> DocumentCategories => Set<DocumentCategory>();
+    public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

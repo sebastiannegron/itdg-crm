@@ -42,6 +42,8 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseMiddleware<UserSyncMiddleware>();
+
 // Endpoints
 app.MapAllEndpoints();
 
