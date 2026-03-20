@@ -38,6 +38,7 @@ on:
 permissions:
   issues: write
   contents: read
+  actions: read
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -62,17 +63,28 @@ jobs:
         if: steps.killswitch.outputs.paused != 'true'
         id: cooldown
         run: |
-          LAST=$(gh variable get COPILOT_LAST_ASSIGNMENT_TIME 2>/dev/null || echo "0")
-          NOW=$(date +%s)
           COOLDOWN=${{ inputs.cooldown_minutes || '15' }}
+
+          # Get the most recent successful orchestrator run that actually assigned a task
+          LAST_RUN_DATE=$(gh run list --workflow="copilot-orchestrator.yml" --status=success --json createdAt --jq '.[0].createdAt // empty' 2>/dev/null || true)
+
+          if [ -z "$LAST_RUN_DATE" ]; then
+            echo "No previous successful run found. Proceeding."
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LAST_EPOCH=$(date -d "$LAST_RUN_DATE" +%s 2>/dev/null || date -j -f "%Y-%m-%dT%H:%M:%SZ" "$LAST_RUN_DATE" +%s 2>/dev/null || echo "0")
+          NOW=$(date +%s)
           COOLDOWN_SECS=$((COOLDOWN * 60))
-          ELAPSED=$((NOW - LAST))
+          ELAPSED=$((NOW - LAST_EPOCH))
 
           if [ "$ELAPSED" -lt "$COOLDOWN_SECS" ]; then
             REMAINING=$(( (COOLDOWN_SECS - ELAPSED) / 60 ))
-            echo "Cooldown active. ${REMAINING}m remaining. Exiting."
+            echo "Cooldown active. ${REMAINING}m remaining since last run. Exiting."
             echo "skip=true" >> "$GITHUB_OUTPUT"
           else
+            echo "Cooldown elapsed (${ELAPSED}s since last run). Proceeding."
             echo "skip=false" >> "$GITHUB_OUTPUT"
           fi
 
@@ -124,5 +136,4 @@ jobs:
           ISSUE=${{ steps.find.outputs.issue }}
           echo "Triggering Copilot on #$ISSUE..."
           gh issue comment "$ISSUE" --body "@copilot"
-          gh variable set COPILOT_LAST_ASSIGNMENT_TIME --body "$(date +%s)"
           echo "Successfully triggered Copilot on #$ISSUE"
