@@ -13,4 +13,10 @@ public class ClientAssignmentRepository : GenericRepository<ClientAssignment>, I
         return await Context.Set<ClientAssignment>()
             .AnyAsync(ca => ca.UserId == userId && ca.ClientId == clientId, cancellationToken);
     }
+
+    public async Task<ClientAssignment?> GetByClientAndUserAsync(Guid clientId, Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await Context.Set<ClientAssignment>()
+            .FirstOrDefaultAsync(ca => ca.ClientId == clientId && ca.UserId == userId, cancellationToken);
+    }
 }
