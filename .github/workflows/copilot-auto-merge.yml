@@ -95,12 +95,11 @@ jobs:
           PR_NUMBER="${{ steps.find-prs.outputs.prs }}"
           echo "Checking PR #$PR_NUMBER..."
 
-          # Skip draft PRs — wait until marked ready for review
+          # Mark draft PRs as ready for review
           IS_DRAFT=$(gh pr view "$PR_NUMBER" --json isDraft --jq '.isDraft')
           if [ "$IS_DRAFT" = "true" ]; then
-            echo "PR #$PR_NUMBER is still a draft. Skipping until ready for review."
-            echo "merged=false" >> "$GITHUB_OUTPUT"
-            exit 0
+            echo "PR #$PR_NUMBER is a draft. Marking as ready for review..."
+            gh pr ready "$PR_NUMBER"
           fi
 
           # Verify all checks pass
