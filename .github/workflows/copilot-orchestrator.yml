@@ -139,6 +139,8 @@ jobs:
 
       - name: Assign task to Copilot
         if: steps.killswitch.outputs.paused != 'true' && steps.cooldown.outputs.skip != 'true' && steps.concurrent.outputs.skip != 'true' && steps.find.outputs.found == 'true' && inputs.dry_run != true
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_TRIGGER_PAT }}
         run: |
           ISSUE=${{ steps.find.outputs.issue }}
           echo "Triggering Copilot on #$ISSUE..."
