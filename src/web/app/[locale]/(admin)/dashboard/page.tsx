@@ -1,10 +1,29 @@
-export default function DashboardPage() {
+import {
+  getDashboardSummary,
+  type DashboardSummaryDto,
+} from "@/server/Services/dashboardService";
+import DashboardView from "./DashboardView";
+import type { TaskItem, EscalationItem, DeadlineItem } from "./shared";
+
+export default async function DashboardPage() {
+  let summary: DashboardSummaryDto | null = null;
+  try {
+    summary = await getDashboardSummary();
+  } catch (error) {
+    console.error("[DashboardPage] Failed to fetch dashboard summary:", error);
+  }
+
+  // Placeholder data until backend task/escalation/deadline endpoints are available
+  const tasks: TaskItem[] = [];
+  const escalations: EscalationItem[] = [];
+  const deadlines: DeadlineItem[] = [];
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Welcome to the ITDG CRM Platform dashboard.
-      </p>
-    </div>
+    <DashboardView
+      initialSummary={summary}
+      initialTasks={tasks}
+      initialEscalations={escalations}
+      initialDeadlines={deadlines}
+    />
   );
 }
