@@ -1,7 +1,8 @@
 name: Copilot CI Failure Notify
 
 on:
-  check_suite:
+  workflow_run:
+    workflows: ["API CI", "Web CI"]
     types: [completed]
 
 permissions:
@@ -13,23 +14,25 @@ env:
 jobs:
   notify-failure:
     runs-on: ubuntu-latest
-    if: github.event.check_suite.conclusion == 'failure'
+    if: github.event.workflow_run.conclusion == 'failure'
     steps:
       - name: Find copilot PR on failing branch
         id: find-pr
         run: |
-          BRANCH="${{ github.event.check_suite.head_branch }}"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
           if [ -z "$BRANCH" ]; then
             echo "No branch found. Exiting."
             exit 0
           fi
 
-          PR_NUMBER=$(gh pr list --author "app/copilot-swe-agent" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
-          if [ -z "$PR_NUMBER" ]; then
-            PR_NUMBER=$(gh pr list --author "Copilot" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
+          if [[ "$BRANCH" != copilot/* ]]; then
+            echo "Branch $BRANCH is not a copilot branch. Exiting."
+            exit 0
           fi
+
+          PR_NUMBER=$(gh pr list --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
           if [ -z "$PR_NUMBER" ]; then
-            echo "No copilot PR found for branch $BRANCH."
+            echo "No open PR found for branch $BRANCH."
             exit 0
           fi
 
@@ -39,11 +42,6 @@ jobs:
         if: steps.find-pr.outputs.pr_number != ''
         run: |
           PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
-          gh pr comment "$PR_NUMBER" --body "$(cat <<'EOF'
-          ⚠️ **CI failed on this PR.**
-
-          The orchestrator will **not** auto-merge this PR. Manual review is required.
-
-          Please check the failing checks and fix the issues before merging.
-          EOF
-          )"
+          WORKFLOW="${{ github.event.workflow_run.name }}"
+          RUN_URL="${{ github.event.workflow_run.html_url }}"
+          gh pr comment "$PR_NUMBER" --body "**CI failed:** [$WORKFLOW]($RUN_URL) — auto-merge blocked. Manual review required."

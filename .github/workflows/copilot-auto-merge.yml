@@ -1,10 +1,9 @@
 name: Copilot Auto-Merge
 
 on:
-  check_suite:
+  workflow_run:
+    workflows: ["API CI", "Web CI", "Copilot PR Fix"]
     types: [completed]
-  pull_request:
-    types: [ready_for_review]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -16,6 +15,7 @@ permissions:
   contents: write
   pull-requests: write
   issues: write
+  actions: read
 
 env:
   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -23,11 +23,9 @@ env:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    # Only run on successful check suites, ready_for_review, or manual dispatch
     if: >-
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'pull_request' ||
-      github.event.check_suite.conclusion == 'success'
+      github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,13 +39,12 @@ jobs:
             echo "Pipeline is paused. Exiting."
           fi
 
-      - name: Find copilot PRs to merge
+      - name: Find copilot PR to merge
         if: steps.killswitch.outputs.paused != 'true'
         id: find-prs
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             PR_NUMBER="${{ inputs.pr_number }}"
-            # Verify PR is from copilot
             AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login')
             if [ "$AUTHOR" != "Copilot" ] && [ "$AUTHOR" != "copilot-swe-agent" ] && [ "$AUTHOR" != "app/copilot-swe-agent" ]; then
               echo "PR #$PR_NUMBER is not from copilot (author: $AUTHOR). Exiting."
@@ -55,36 +52,38 @@ jobs:
               exit 0
             fi
             echo "prs=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+          else
+            # workflow_run event — find copilot PR on the triggering branch
+            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            if [ -z "$BRANCH" ]; then
+              echo "No branch found. Exiting."
+              echo "prs=" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
 
-          elif [ "${{ github.event_name }}" = "pull_request" ]; then
-            PR_NUMBER="${{ github.event.pull_request.number }}"
-            AUTHOR="${{ github.event.pull_request.user.login }}"
-            if [ "$AUTHOR" != "Copilot" ] && [ "$AUTHOR" != "copilot-swe-agent[bot]" ] && [ "$AUTHOR" != "copilot-swe-agent" ]; then
+            # Only process copilot branches
+            if [[ "$BRANCH" != copilot/* ]]; then
+              echo "Branch $BRANCH is not a copilot branch. Exiting."
+              echo "prs=" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            PR_NUMBER=$(gh pr list --state open --head "$BRANCH" --json number,author --jq '.[0].number // empty')
+            if [ -z "$PR_NUMBER" ]; then
+              echo "No open PR found for branch $BRANCH."
+              echo "prs=" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            # Verify author is copilot
+            AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login')
+            if [ "$AUTHOR" != "Copilot" ] && [ "$AUTHOR" != "copilot-swe-agent" ] && [ "$AUTHOR" != "app/copilot-swe-agent" ]; then
               echo "PR #$PR_NUMBER is not from copilot (author: $AUTHOR). Exiting."
               echo "prs=" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            echo "prs=$PR_NUMBER" >> "$GITHUB_OUTPUT"
 
-          else
-            # check_suite event — find copilot PR on the triggering branch
-            BRANCH="${{ github.event.check_suite.head_branch }}"
-            if [ -z "$BRANCH" ]; then
-              echo "No branch found in check suite. Exiting."
-              echo "prs=" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-
-            # Try both author identifiers — GitHub may use either depending on context
-            PR_NUMBER=$(gh pr list --author "app/copilot-swe-agent" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
-            if [ -z "$PR_NUMBER" ]; then
-              PR_NUMBER=$(gh pr list --author "Copilot" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
-            fi
-            if [ -z "$PR_NUMBER" ]; then
-              echo "No copilot PR found for branch $BRANCH."
-              echo "prs=" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
+            echo "Found copilot PR #$PR_NUMBER on branch $BRANCH"
             echo "prs=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           fi
 
@@ -102,21 +101,21 @@ jobs:
           if [ "$IS_DRAFT" = "true" ]; then
             echo "PR #$PR_NUMBER is a draft. Marking as ready for review..."
             gh pr ready "$PR_NUMBER"
-            echo "Waiting for CI to start on the now-ready PR..."
+            echo "Waiting for CI to re-run on the now-ready PR..."
             echo "merged=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          # Verify all checks pass
+          # Verify ALL checks pass (not just the triggering workflow)
           CHECKS_STATUS=$(gh pr checks "$PR_NUMBER" --json state --jq '[.[] | select(.state != "SUCCESS" and .state != "SKIPPED")] | length')
           if [ "$CHECKS_STATUS" != "0" ]; then
-            echo "PR #$PR_NUMBER has failing or pending checks. Skipping merge."
+            echo "PR #$PR_NUMBER has failing or pending checks. Waiting for all to complete."
             echo "merged=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           # Squash merge
-          echo "Merging PR #$PR_NUMBER..."
+          echo "All checks passed. Merging PR #$PR_NUMBER..."
           gh pr merge "$PR_NUMBER" --squash --delete-branch
           echo "merged=true" >> "$GITHUB_OUTPUT"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
@@ -137,7 +136,6 @@ jobs:
             echo "Closing issue #$CLOSES_NUMBER (from Closes #N)..."
             gh issue close "$CLOSES_NUMBER" --comment "Closed by copilot PR #$PR_NUMBER via auto-merge pipeline."
           elif [ -n "$ISSUE_TITLE" ]; then
-            # Match against open issue titles
             ISSUE_NUMBER=$(gh issue list --state open --json number,title --jq ".[] | select(.title == \"$ISSUE_TITLE\") | .number" | head -1 || true)
             if [ -n "$ISSUE_NUMBER" ]; then
               echo "Closing issue #$ISSUE_NUMBER (matched by title)..."
