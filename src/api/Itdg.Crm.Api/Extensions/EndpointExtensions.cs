@@ -10,6 +10,7 @@ public static class EndpointExtensions
         app.MapClientsEndpoints();
         app.MapTemplatesEndpoints();
         app.MapPortalEndpoints();
+        app.MapMessagesEndpoints();
         app.MapUsersEndpoints();
         app.MapTiersEndpoints();
         return app;

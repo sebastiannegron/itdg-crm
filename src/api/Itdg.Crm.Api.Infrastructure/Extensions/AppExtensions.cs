@@ -111,6 +111,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<RetireTemplate>, RetireTemplateHandler>();
         services.AddScoped<ICommandHandler<SendPortalMessage>, SendPortalMessageHandler>();
         services.AddScoped<ICommandHandler<MarkMessageAsRead>, MarkMessageAsReadHandler>();
+        services.AddScoped<ICommandHandler<SendTemplateMessage>, SendTemplateMessageHandler>();
         services.AddScoped<ICommandHandler<AssignClient>, AssignClientHandler>();
         services.AddScoped<ICommandHandler<UnassignClient>, UnassignClientHandler>();
         services.AddScoped<ICommandHandler<UpdateUser>, UpdateUserHandler>();
