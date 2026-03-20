@@ -33,7 +33,7 @@ public class GmailService : IGmailService
     {
         using Activity? activity = DiagnosticsConfig.ActivitySource.StartActivity("Gmail List Messages");
 
-        using var service = CreateGmailApiService(userAccessToken);
+        using var service = CreateGoogleGmailClient(userAccessToken);
 
         var request = service.Users.Messages.List("me");
         request.MaxResults = maxResults;
@@ -76,7 +76,7 @@ public class GmailService : IGmailService
         using Activity? activity = DiagnosticsConfig.ActivitySource.StartActivity("Gmail Get Message");
         activity?.SetTag("MessageId", messageId);
 
-        using var service = CreateGmailApiService(userAccessToken);
+        using var service = CreateGoogleGmailClient(userAccessToken);
 
         _logger.LogInformation("Getting Gmail message {MessageId}", messageId);
 
@@ -92,7 +92,7 @@ public class GmailService : IGmailService
     {
         using Activity? activity = DiagnosticsConfig.ActivitySource.StartActivity("Gmail Send Message");
 
-        using var service = CreateGmailApiService(userAccessToken);
+        using var service = CreateGoogleGmailClient(userAccessToken);
 
         var rawMessage = CreateRawMessage(to, subject, body);
 
@@ -105,7 +105,7 @@ public class GmailService : IGmailService
         return await GetFullMessageAsync(service, sentMessage.Id, cancellationToken);
     }
 
-    internal Google.Apis.Gmail.v1.GmailService CreateGmailApiService(string userAccessToken)
+    internal Google.Apis.Gmail.v1.GmailService CreateGoogleGmailClient(string userAccessToken)
     {
         var credential = GoogleCredential.FromAccessToken(userAccessToken);
 

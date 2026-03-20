@@ -43,7 +43,7 @@ public class GmailServiceTests
                     new() { Name = "To", Value = "recipient@example.com" },
                     new() { Name = "Date", Value = "Mon, 20 Jan 2025 10:30:00 -0400" }
                 },
-                Body = new MessagePartBody { Data = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("Hello body")).Replace('+', '-').Replace('/', '_').TrimEnd('=') }
+                Body = new MessagePartBody { Data = EncodeBase64Url("Hello body") }
             }
         };
 
