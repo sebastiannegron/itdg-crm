@@ -1,0 +1,32 @@
+import { z } from "zod";
+import { codeRegex, urlRegex } from "@/app/[locale]/_shared/app-enums";
+import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
+import type { ClientTierDto } from "@/server/Services/tierService";
+
+export type { ClientTierDto };
+
+function safeText(locale: Locale) {
+  const t = fieldnames[locale];
+  return {
+    required: t.required_error,
+    invalidInput: t.settings_invalid_input,
+  };
+}
+
+export function TierSchema(locale: Locale) {
+  const msg = safeText(locale);
+
+  return z.object({
+    name: z
+      .string()
+      .min(1, msg.required)
+      .max(100)
+      .refine(
+        (val) => !codeRegex.test(val) && !urlRegex.test(val),
+        msg.invalidInput,
+      ),
+    sort_order: z.number().int().min(0),
+  });
+}
+
+export type TierFormData = z.infer<ReturnType<typeof TierSchema>>;

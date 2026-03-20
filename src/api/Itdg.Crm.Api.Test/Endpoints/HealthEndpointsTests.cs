@@ -40,6 +40,10 @@ public class HealthEndpointsTests : IClassFixture<WebApplicationFactory<Program>
                 // Add in-memory database
                 services.AddDbContext<Itdg.Crm.Api.Infrastructure.Data.CrmDbContext>(options =>
                     options.UseInMemoryDatabase("TestDb"));
+
+                // Register DbContext as CrmDbContext for GenericRepository<T>
+                services.AddScoped<DbContext>(sp =>
+                    sp.GetRequiredService<Itdg.Crm.Api.Infrastructure.Data.CrmDbContext>());
             });
         }).CreateClient();
     }

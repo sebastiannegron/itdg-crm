@@ -65,6 +65,9 @@ public static class AppExtensions
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<CrmDbContext>());
 
+        services.AddScoped<DbContext>(provider =>
+            provider.GetRequiredService<CrmDbContext>());
+
         // Tenant provider
         services.AddScoped<ITenantProvider, Itdg.Crm.Api.Infrastructure.TenantProvider.ClaimsTenantProvider>();
 
