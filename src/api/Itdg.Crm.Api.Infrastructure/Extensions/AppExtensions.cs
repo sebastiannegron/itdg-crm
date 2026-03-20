@@ -131,6 +131,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<MarkNotificationAsRead>, MarkNotificationAsReadHandler>();
         services.AddScoped<ICommandHandler<MarkAllNotificationsAsRead>, MarkAllNotificationsAsReadHandler>();
         services.AddScoped<ICommandHandler<UpdateNotificationPreferences>, UpdateNotificationPreferencesHandler>();
+        services.AddScoped<ICommandHandler<UploadDocument>, UploadDocumentHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
