@@ -7,14 +7,75 @@ on:
       - ".github/workflows/web-ci.yml"
 
 jobs:
+  fix-lockfile:
+    runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'copilot/')
+    outputs:
+      fixed: ${{ steps.fix-lock.outputs.fixed }}
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          token: ${{ secrets.COPILOT_TRIGGER_PAT }}
+
+      - name: Check if lock file is out of sync
+        id: check-deps
+        run: |
+          git fetch origin ${{ github.base_ref }}
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- src/web/package.json)
+          if [ -n "$CHANGED" ]; then
+            echo "needs_check=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needs_check=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node.js
+        if: steps.check-deps.outputs.needs_check == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Fix package-lock.json
+        if: steps.check-deps.outputs.needs_check == 'true'
+        id: fix-lock
+        working-directory: src/web
+        run: |
+          if npm ci 2>/dev/null; then
+            echo "Lock file is already in sync."
+            echo "fixed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Lock file out of sync. Running npm install..."
+            npm install
+            if git diff --quiet src/web/package-lock.json 2>/dev/null; then
+              echo "fixed=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "fixed=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Commit lock file fix
+        if: steps.fix-lock.outputs.fixed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/web/package-lock.json
+          git commit -m "Fix package-lock.json sync with package.json"
+          git push
+
   build-and-test:
     runs-on: ubuntu-latest
+    needs: [fix-lockfile]
+    if: always() && needs.fix-lockfile.outputs.fixed != 'true'
     defaults:
       run:
         working-directory: src/web
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

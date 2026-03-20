@@ -1,79 +1,56 @@
 name: Copilot PR Fix
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  workflow_run:
+    workflows: ["API CI", "Web CI"]
+    types: [completed]
 
 permissions:
-  contents: write
   pull-requests: write
 
 env:
-  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GH_TOKEN: ${{ secrets.COPILOT_TRIGGER_PAT }}
 
 jobs:
-  fix-and-ready:
+  mark-ready:
     runs-on: ubuntu-latest
-    # Only run on copilot branches
-    if: startsWith(github.head_ref, 'copilot/')
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      startsWith(github.event.workflow_run.head_branch, 'copilot/')
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-          # Use PAT so the commit triggers CI workflows
-          token: ${{ secrets.COPILOT_TRIGGER_PAT }}
-
-      - name: Check if package.json was modified
-        id: check-deps
+      - name: Find copilot PR
+        id: find-pr
         run: |
-          # Check if package.json changed in this PR
-          git fetch origin ${{ github.base_ref }}
-          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- src/web/package.json)
-          if [ -n "$CHANGED" ]; then
-            echo "Package.json was modified. Checking lock file sync..."
-            echo "needs_fix=true" >> "$GITHUB_OUTPUT"
+          BRANCH="${{ github.event.workflow_run.head_branch }}"
+          PR_NUMBER=$(gh pr list --repo "${{ github.repository }}" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open PR found for branch $BRANCH."
+            exit 0
+          fi
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Check all CI workflows passed
+        if: steps.find-pr.outputs.pr_number != ''
+        id: check-all
+        run: |
+          PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
+          FAILING=$(gh pr checks "$PR_NUMBER" --repo "${{ github.repository }}" --json state --jq '[.[] | select(.state != "SUCCESS" and .state != "SKIPPED")] | length')
+          if [ "$FAILING" != "0" ]; then
+            echo "PR #$PR_NUMBER still has pending or failing checks. Waiting."
+            echo "all_passed=false" >> "$GITHUB_OUTPUT"
           else
-            echo "No package.json changes detected."
-            echo "needs_fix=false" >> "$GITHUB_OUTPUT"
+            echo "All checks passed for PR #$PR_NUMBER."
+            echo "all_passed=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Setup Node.js
-        if: steps.check-deps.outputs.needs_fix == 'true'
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-
-      - name: Fix package-lock.json
-        if: steps.check-deps.outputs.needs_fix == 'true'
-        id: fix-lock
-        working-directory: src/web
+      - name: Mark PR as ready for review
+        if: steps.find-pr.outputs.pr_number != '' && steps.check-all.outputs.all_passed == 'true'
         run: |
-          # Check if npm ci fails (lock file out of sync)
-          if npm ci 2>/dev/null; then
-            echo "Lock file is already in sync."
-            echo "fixed=false" >> "$GITHUB_OUTPUT"
+          PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
+          IS_DRAFT=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json isDraft --jq '.isDraft')
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "Marking PR #$PR_NUMBER as ready for review..."
+            gh pr ready "$PR_NUMBER" --repo "${{ github.repository }}"
           else
-            echo "Lock file out of sync. Running npm install..."
-            npm install
-            # Check if lock file actually changed
-            if git diff --quiet src/web/package-lock.json 2>/dev/null; then
-              echo "No lock file changes needed."
-              echo "fixed=false" >> "$GITHUB_OUTPUT"
-            else
-              echo "Lock file updated."
-              echo "fixed=true" >> "$GITHUB_OUTPUT"
-            fi
+            echo "PR #$PR_NUMBER is already ready for review."
           fi
-
-      - name: Commit lock file fix
-        if: steps.fix-lock.outputs.fixed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add src/web/package-lock.json
-          git commit -m "Fix package-lock.json sync with package.json"
-          git push
-
-      # Draft → ready is handled by copilot-auto-merge.yml after CI passes
