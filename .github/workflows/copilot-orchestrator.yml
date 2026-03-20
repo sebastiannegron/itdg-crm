@@ -81,9 +81,9 @@ jobs:
         id: concurrent
         run: |
           MAX=${{ inputs.max_concurrent || '1' }}
-          # Count open issues assigned to copilot-swe-agent
-          CURRENT=$(gh issue list --assignee "copilot-swe-agent" --state open --json number --jq 'length')
-          echo "Current copilot tasks: $CURRENT / Max: $MAX"
+          # Count open PRs by copilot as a proxy for active tasks
+          CURRENT=$(gh pr list --author "app/copilot-swe-agent" --state open --json number --jq 'length')
+          echo "Current copilot PRs: $CURRENT / Max: $MAX"
 
           if [ "$CURRENT" -ge "$MAX" ]; then
             echo "Max concurrent tasks reached. Exiting."
@@ -122,8 +122,7 @@ jobs:
         if: steps.killswitch.outputs.paused != 'true' && steps.cooldown.outputs.skip != 'true' && steps.concurrent.outputs.skip != 'true' && steps.find.outputs.found == 'true' && inputs.dry_run != true
         run: |
           ISSUE=${{ steps.find.outputs.issue }}
-          echo "Assigning #$ISSUE to copilot-swe-agent..."
-          gh issue edit "$ISSUE" --add-assignee copilot-swe-agent
+          echo "Triggering Copilot on #$ISSUE..."
+          gh issue comment "$ISSUE" --body "@copilot"
           gh variable set COPILOT_LAST_ASSIGNMENT_TIME "$(date +%s)"
-          gh issue comment "$ISSUE" --body "Assigned to Copilot agent by orchestrator pipeline."
-          echo "Successfully assigned #$ISSUE"
+          echo "Successfully triggered Copilot on #$ISSUE"
