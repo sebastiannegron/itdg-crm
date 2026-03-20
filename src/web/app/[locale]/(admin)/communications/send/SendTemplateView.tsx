@@ -486,7 +486,7 @@ export default function SendTemplateView({
               <Mail className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
                 {t.send_template_email}
-                {selectedClient.contact_email
+                {selectedClient?.contact_email
                   ? ` (${selectedClient.contact_email})`
                   : ""}
               </span>
