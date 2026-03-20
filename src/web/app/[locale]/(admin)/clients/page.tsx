@@ -5,7 +5,8 @@ export default async function ClientsPage() {
   let clients;
   try {
     clients = await getClients({ page: 1, pageSize: 20 });
-  } catch {
+  } catch (error) {
+    console.error("[ClientsPage] Failed to fetch clients:", error);
     clients = { items: [], total_count: 0, page: 1, page_size: 20 };
   }
 
