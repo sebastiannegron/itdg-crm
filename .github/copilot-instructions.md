@@ -407,6 +407,7 @@ z.string().min(1).refine(val => !codeRegex.test(val) && !urlRegex.test(val), "In
 - Branch naming: `feature/{issue-number}-short-description` or `bugfix/{issue-number}-short-description`
 - Commit messages in imperative mood: "Add client list endpoint" not "Added client list endpoint"
 - Keep commits small and focused — one logical change per commit
+- Always include `Closes #N` (where N is the issue number) in the PR description body. This links the PR to the issue and allows automated workflows to close the issue on merge.
 - Do not commit `bin/`, `obj/`, `node_modules/`, or build artifacts
 - Do not commit `.env` files or `appsettings.Development.json` with real credentials
 

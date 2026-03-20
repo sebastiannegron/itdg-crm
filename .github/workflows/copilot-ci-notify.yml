@@ -1,0 +1,46 @@
+name: Copilot CI Failure Notify
+
+on:
+  check_suite:
+    types: [completed]
+
+permissions:
+  pull-requests: write
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  notify-failure:
+    runs-on: ubuntu-latest
+    if: github.event.check_suite.conclusion == 'failure'
+    steps:
+      - name: Find copilot PR on failing branch
+        id: find-pr
+        run: |
+          BRANCH="${{ github.event.check_suite.head_branch }}"
+          if [ -z "$BRANCH" ]; then
+            echo "No branch found. Exiting."
+            exit 0
+          fi
+
+          PR_NUMBER=$(gh pr list --author "app/copilot-swe-agent" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No copilot PR found for branch $BRANCH."
+            exit 0
+          fi
+
+          echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+      - name: Comment on PR
+        if: steps.find-pr.outputs.pr_number != ''
+        run: |
+          PR_NUMBER="${{ steps.find-pr.outputs.pr_number }}"
+          gh pr comment "$PR_NUMBER" --body "$(cat <<'EOF'
+          ⚠️ **CI failed on this PR.**
+
+          The orchestrator will **not** auto-merge this PR. Manual review is required.
+
+          Please check the failing checks and fix the issues before merging.
+          EOF
+          )"

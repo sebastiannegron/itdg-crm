@@ -1,0 +1,129 @@
+name: Copilot Orchestrator
+
+on:
+  workflow_dispatch:
+    inputs:
+      cooldown_minutes:
+        description: "Minimum minutes between assignments"
+        required: false
+        default: "15"
+        type: string
+      dry_run:
+        description: "Log only, don't assign"
+        required: false
+        default: false
+        type: boolean
+      max_concurrent:
+        description: "Max simultaneous copilot tasks"
+        required: false
+        default: "1"
+        type: string
+  workflow_call:
+    inputs:
+      cooldown_minutes:
+        required: false
+        default: "15"
+        type: string
+      dry_run:
+        required: false
+        default: false
+        type: boolean
+      max_concurrent:
+        required: false
+        default: "1"
+        type: string
+  issues:
+    types: [closed]
+
+permissions:
+  issues: write
+  contents: read
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check kill switch
+        id: killswitch
+        run: |
+          PAUSED=$(gh variable get COPILOT_PIPELINE_PAUSED 2>/dev/null || echo "false")
+          echo "paused=$PAUSED" >> "$GITHUB_OUTPUT"
+          if [ "$PAUSED" = "true" ]; then
+            echo "Pipeline is paused. Exiting."
+          fi
+
+      - name: Check cooldown
+        if: steps.killswitch.outputs.paused != 'true'
+        id: cooldown
+        run: |
+          LAST=$(gh variable get COPILOT_LAST_ASSIGNMENT_TIME 2>/dev/null || echo "0")
+          NOW=$(date +%s)
+          COOLDOWN=${{ inputs.cooldown_minutes || '15' }}
+          COOLDOWN_SECS=$((COOLDOWN * 60))
+          ELAPSED=$((NOW - LAST))
+
+          if [ "$ELAPSED" -lt "$COOLDOWN_SECS" ]; then
+            REMAINING=$(( (COOLDOWN_SECS - ELAPSED) / 60 ))
+            echo "Cooldown active. ${REMAINING}m remaining. Exiting."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check concurrent tasks
+        if: steps.killswitch.outputs.paused != 'true' && steps.cooldown.outputs.skip != 'true'
+        id: concurrent
+        run: |
+          MAX=${{ inputs.max_concurrent || '1' }}
+          # Count open issues assigned to copilot-swe-agent
+          CURRENT=$(gh issue list --assignee "copilot-swe-agent" --state open --json number --jq 'length')
+          echo "Current copilot tasks: $CURRENT / Max: $MAX"
+
+          if [ "$CURRENT" -ge "$MAX" ]; then
+            echo "Max concurrent tasks reached. Exiting."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.killswitch.outputs.paused != 'true' && steps.cooldown.outputs.skip != 'true' && steps.concurrent.outputs.skip != 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Find next task
+        if: steps.killswitch.outputs.paused != 'true' && steps.cooldown.outputs.skip != 'true' && steps.concurrent.outputs.skip != 'true'
+        id: find
+        run: |
+          DRY_RUN_FLAG=""
+          if [ "${{ inputs.dry_run || 'false' }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+
+          NEXT=$(python .github/scripts/find_next_task.py $DRY_RUN_FLAG)
+
+          if [ -z "$NEXT" ]; then
+            echo "No eligible tasks found."
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Next task: #$NEXT"
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "issue=$NEXT" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Assign task to Copilot
+        if: steps.killswitch.outputs.paused != 'true' && steps.cooldown.outputs.skip != 'true' && steps.concurrent.outputs.skip != 'true' && steps.find.outputs.found == 'true' && inputs.dry_run != true
+        run: |
+          ISSUE=${{ steps.find.outputs.issue }}
+          echo "Assigning #$ISSUE to copilot-swe-agent..."
+          gh issue edit "$ISSUE" --add-assignee copilot-swe-agent
+          gh variable set COPILOT_LAST_ASSIGNMENT_TIME "$(date +%s)"
+          gh issue comment "$ISSUE" --body "Assigned to Copilot agent by orchestrator pipeline."
+          echo "Successfully assigned #$ISSUE"
