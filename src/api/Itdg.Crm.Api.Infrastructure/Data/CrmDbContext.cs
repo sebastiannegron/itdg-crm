@@ -31,6 +31,8 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     public DbSet<Notification> Notifications => Set<Notification>();
     public DbSet<NotificationPreference> NotificationPreferences => Set<NotificationPreference>();
     public DbSet<Message> Messages => Set<Message>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<ClientAssignment> ClientAssignments => Set<ClientAssignment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
