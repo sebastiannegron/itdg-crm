@@ -389,18 +389,34 @@ z.string().min(1).refine(val => !codeRegex.test(val) && !urlRegex.test(val), "In
 
 ---
 
-## Dependency Management — CRITICAL
+## Dependency Management — CRITICAL (READ THIS CAREFULLY)
 
-**Frontend (`src/web/`):**
-- After adding, removing, or changing ANY dependency in `package.json`, you MUST run `npm install` from the `src/web/` directory to regenerate `package-lock.json`
-- ALWAYS commit both `package.json` AND `package-lock.json` together in the same commit
-- Never manually edit `package-lock.json` — only `npm install` should modify it
-- CI uses `npm ci` which requires `package.json` and `package-lock.json` to be in sync — if they are not, the build will fail
-- Before pushing, verify: `cd src/web && npm ci` succeeds locally
+> ⚠️ **THIS IS THE #1 CAUSE OF CI FAILURES.** If you touch `package.json` and do not follow these steps exactly, CI **WILL** fail and the PR **WILL** be blocked.
+
+**Frontend (`src/web/`) — MANDATORY steps when ANY dependency changes:**
+
+1. Make your changes to `package.json`
+2. Run `cd src/web && npm install` — this regenerates `package-lock.json`
+3. Run `cd src/web && npm ci` — this verifies the lock file is in sync (if this fails, CI will also fail)
+4. Commit **BOTH** `package.json` AND `package-lock.json` in the same commit
+
+- **NEVER** skip step 2. Even if you only added one package, `npm install` MUST run.
+- **NEVER** manually edit `package-lock.json` — only `npm install` should modify it.
+- **NEVER** commit `package.json` without the updated `package-lock.json`.
+- CI runs `npm ci` which requires both files to be perfectly in sync. Any mismatch = build failure.
 
 **Backend (`src/api/`):**
 - After adding NuGet packages, verify `dotnet restore` succeeds
 - Before pushing, verify: `cd src/api && dotnet build` succeeds
+
+**Pre-push checklist (run before every push):**
+```bash
+# If you touched frontend dependencies:
+cd src/web && npm ci && npm run build && npm test
+
+# If you touched backend dependencies:
+cd src/api && dotnet build && dotnet test
+```
 
 ## Git & PR Conventions
 
