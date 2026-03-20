@@ -76,7 +76,7 @@ public class CreateClientHandler : ICommandHandler<CreateClient>
             activity?.SetTag("CorrelationId", correlationId);
             activity?.SetTag("ClientName", clientName);
 
-            var clientFolder = await _driveService.CreateFolderAsync(accessToken, clientName, cancellationToken: cancellationToken);
+            var clientFolder = await _driveService.CreateFolderAsync(accessToken, clientName, parentFolderId: null, cancellationToken);
 
             var year = DateTimeOffset.UtcNow.Year.ToString();
             var yearFolder = await _driveService.CreateFolderAsync(accessToken, year, clientFolder.Id, cancellationToken);

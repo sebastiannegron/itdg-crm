@@ -131,7 +131,7 @@ public class CreateClientHandlerTests
         _categoryRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(categories.AsReadOnly());
 
         _driveService.CreateFolderAsync("test-access-token", Arg.Any<string>(), "folder-2", Arg.Any<CancellationToken>())
-            .Returns(new DriveFileDto("folder-3", "cat", "application/vnd.google-apps.folder", null, null, null, null, []));
+            .Returns(new DriveFileDto("folder-3", "Category Folder", "application/vnd.google-apps.folder", null, null, null, null, []));
 
         // Act
         await _handler.HandleAsync(command, "en-pr", Guid.NewGuid(), CancellationToken.None);
@@ -275,7 +275,7 @@ public class CreateClientHandlerTests
         _categoryRepository.GetAllAsync(Arg.Any<CancellationToken>()).Returns(categories.AsReadOnly());
 
         _driveService.CreateFolderAsync("test-access-token", Arg.Any<string>(), "folder-2", Arg.Any<CancellationToken>())
-            .Returns(new DriveFileDto("folder-3", "cat", "application/vnd.google-apps.folder", null, null, null, null, []));
+            .Returns(new DriveFileDto("folder-3", "Category Folder", "application/vnd.google-apps.folder", null, null, null, null, []));
 
         // Act
         await _handler.HandleAsync(command, "en-pr", Guid.NewGuid(), CancellationToken.None);
