@@ -1,5 +1,6 @@
 namespace Itdg.Crm.Api.Test.Queries;
 
+using Itdg.Crm.Api.Application.Abstractions;
 using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Exceptions;
 using Itdg.Crm.Api.Application.Queries;
@@ -12,14 +13,28 @@ using Microsoft.Extensions.Logging;
 public class GetClientByIdHandlerTests
 {
     private readonly IClientRepository _repository;
+    private readonly IClientAssignmentRepository _clientAssignmentRepository;
+    private readonly IUserRepository _userRepository;
+    private readonly ICurrentUserProvider _currentUserProvider;
     private readonly ILogger<GetClientByIdHandler> _logger;
     private readonly GetClientByIdHandler _handler;
 
     public GetClientByIdHandlerTests()
     {
         _repository = Substitute.For<IClientRepository>();
+        _clientAssignmentRepository = Substitute.For<IClientAssignmentRepository>();
+        _userRepository = Substitute.For<IUserRepository>();
+        _currentUserProvider = Substitute.For<ICurrentUserProvider>();
         _logger = Substitute.For<ILogger<GetClientByIdHandler>>();
-        _handler = new GetClientByIdHandler(_repository, _logger);
+        _handler = new GetClientByIdHandler(
+            _repository,
+            _clientAssignmentRepository,
+            _userRepository,
+            _currentUserProvider,
+            _logger);
+
+        // Default: Administrator (bypasses assignment check)
+        _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(true);
     }
 
     [Fact]
@@ -112,5 +127,147 @@ public class GetClientByIdHandlerTests
         // Assert
         await act.Should().ThrowAsync<NotFoundException>()
             .WithMessage($"*{clientId}*");
+    }
+
+    [Fact]
+    public async Task HandleAsync_Administrator_ReturnsClient_WithoutCheckingAssignment()
+    {
+        // Arrange
+        var clientId = Guid.NewGuid();
+        var client = new Client
+        {
+            Id = clientId,
+            Name = "Admin Visible Client",
+            Status = ClientStatus.Active,
+            TenantId = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(true);
+        _repository.GetByIdWithTierAsync(clientId, Arg.Any<CancellationToken>()).Returns(client);
+
+        // Act
+        var result = await _handler.HandleAsync(new GetClientById(clientId), Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        result.ClientId.Should().Be(clientId);
+        await _clientAssignmentRepository.DidNotReceive().ExistsAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _userRepository.DidNotReceive().GetByEntraObjectIdAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleAsync_Associate_ReturnsClient_WhenAssigned()
+    {
+        // Arrange
+        var clientId = Guid.NewGuid();
+        var entraObjectId = "associate-entra-id";
+        var userId = Guid.NewGuid();
+
+        var client = new Client
+        {
+            Id = clientId,
+            Name = "Assigned Client",
+            Status = ClientStatus.Active,
+            TenantId = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        var user = new User
+        {
+            Id = userId,
+            EntraObjectId = entraObjectId,
+            Email = "associate@example.com",
+            DisplayName = "Associate User",
+            Role = UserRole.Associate,
+            TenantId = Guid.NewGuid()
+        };
+
+        _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(false);
+        _currentUserProvider.GetEntraObjectId().Returns(entraObjectId);
+        _userRepository.GetByEntraObjectIdAsync(entraObjectId, Arg.Any<CancellationToken>()).Returns(user);
+        _clientAssignmentRepository.ExistsAsync(userId, clientId, Arg.Any<CancellationToken>()).Returns(true);
+        _repository.GetByIdWithTierAsync(clientId, Arg.Any<CancellationToken>()).Returns(client);
+
+        // Act
+        var result = await _handler.HandleAsync(new GetClientById(clientId), Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        result.ClientId.Should().Be(clientId);
+        await _clientAssignmentRepository.Received(1).ExistsAsync(userId, clientId, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandleAsync_Associate_ThrowsNotFoundException_WhenNotAssigned()
+    {
+        // Arrange
+        var clientId = Guid.NewGuid();
+        var entraObjectId = "associate-entra-id";
+        var userId = Guid.NewGuid();
+
+        var client = new Client
+        {
+            Id = clientId,
+            Name = "Unassigned Client",
+            Status = ClientStatus.Active,
+            TenantId = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        var user = new User
+        {
+            Id = userId,
+            EntraObjectId = entraObjectId,
+            Email = "associate@example.com",
+            DisplayName = "Associate User",
+            Role = UserRole.Associate,
+            TenantId = Guid.NewGuid()
+        };
+
+        _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(false);
+        _currentUserProvider.GetEntraObjectId().Returns(entraObjectId);
+        _userRepository.GetByEntraObjectIdAsync(entraObjectId, Arg.Any<CancellationToken>()).Returns(user);
+        _clientAssignmentRepository.ExistsAsync(userId, clientId, Arg.Any<CancellationToken>()).Returns(false);
+        _repository.GetByIdWithTierAsync(clientId, Arg.Any<CancellationToken>()).Returns(client);
+
+        // Act
+        var act = () => _handler.HandleAsync(new GetClientById(clientId), Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage($"*{clientId}*");
+    }
+
+    [Fact]
+    public async Task HandleAsync_Associate_ThrowsNotFoundException_WhenUserNotFoundInDatabase()
+    {
+        // Arrange
+        var clientId = Guid.NewGuid();
+        var entraObjectId = "unknown-entra-id";
+
+        var client = new Client
+        {
+            Id = clientId,
+            Name = "Some Client",
+            Status = ClientStatus.Active,
+            TenantId = Guid.NewGuid(),
+            CreatedAt = DateTimeOffset.UtcNow,
+            UpdatedAt = DateTimeOffset.UtcNow
+        };
+
+        _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(false);
+        _currentUserProvider.GetEntraObjectId().Returns(entraObjectId);
+        _userRepository.GetByEntraObjectIdAsync(entraObjectId, Arg.Any<CancellationToken>()).Returns((User?)null);
+        _repository.GetByIdWithTierAsync(clientId, Arg.Any<CancellationToken>()).Returns(client);
+
+        // Act
+        var act = () => _handler.HandleAsync(new GetClientById(clientId), Guid.NewGuid(), CancellationToken.None);
+
+        // Assert
+        await act.Should().ThrowAsync<NotFoundException>()
+            .WithMessage($"*{clientId}*");
+        await _clientAssignmentRepository.DidNotReceive().ExistsAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 }

@@ -22,6 +22,7 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
         ClientStatus? status = null,
         Guid? tierId = null,
         string? search = null,
+        Guid? assignedUserId = null,
         CancellationToken cancellationToken = default)
     {
         var query = Context.Set<Client>()
@@ -44,6 +45,13 @@ public class ClientRepository : GenericRepository<Client>, IClientRepository
                 c.Name.Contains(search) ||
                 (c.ContactEmail != null && c.ContactEmail.Contains(search)) ||
                 (c.IndustryTag != null && c.IndustryTag.Contains(search)));
+        }
+
+        if (assignedUserId.HasValue)
+        {
+            var userId = assignedUserId.Value;
+            query = query.Where(c =>
+                Context.Set<ClientAssignment>().Any(ca => ca.ClientId == c.Id && ca.UserId == userId));
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
