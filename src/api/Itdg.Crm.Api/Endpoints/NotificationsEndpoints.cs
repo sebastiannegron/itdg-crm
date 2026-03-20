@@ -4,6 +4,7 @@ using Itdg.Crm.Api.Application.Commands;
 using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Queries;
 using Itdg.Crm.Api.Domain.GeneralConstants;
+using Itdg.Crm.Api.Requests;
 
 public static class NotificationsEndpoints
 {
@@ -31,6 +32,16 @@ public static class NotificationsEndpoints
         group.MapPut("/ReadAll", MarkAllNotificationsAsReadEndpoint)
             .RequireAuthorization(AuthorizationPolicyNames.Associate)
             .WithName("MarkAllNotificationsAsRead")
+            .Produces(StatusCodes.Status204NoContent);
+
+        group.MapGet("/Preferences", GetNotificationPreferencesEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetNotificationPreferences")
+            .Produces<IEnumerable<NotificationPreferenceDto>>(StatusCodes.Status200OK);
+
+        group.MapPut("/Preferences", UpdateNotificationPreferencesEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("UpdateNotificationPreferences")
             .Produces(StatusCodes.Status204NoContent);
 
         return group;
@@ -127,6 +138,56 @@ public static class NotificationsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "mark_all_notifications_as_read_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetNotificationPreferencesEndpoint(
+        HttpContext httpContext,
+        IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var result = await handler.HandleAsync(new GetNotificationPreferences(), Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_notification_preferences_failed" } });
+        }
+    }
+
+    private static async Task<IResult> UpdateNotificationPreferencesEndpoint(
+        UpdateNotificationPreferencesRequest request,
+        HttpContext httpContext,
+        ICommandHandler<UpdateNotificationPreferences> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var preferences = request.Preferences.Select(p => new NotificationPreferenceDto(
+                PreferenceId: Guid.Empty,
+                EventType: p.EventType,
+                Channel: p.Channel,
+                IsEnabled: p.IsEnabled,
+                DigestMode: p.DigestMode
+            )).ToList();
+
+            var command = new UpdateNotificationPreferences(preferences);
+            await handler.HandleAsync(command, string.Empty, Guid.Parse(correlationId!), cancellationToken);
+            return Results.NoContent();
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "update_notification_preferences_failed" } });
         }
     }
 }

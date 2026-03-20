@@ -130,6 +130,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<ReorderDocumentCategories>, ReorderDocumentCategoriesHandler>();
         services.AddScoped<ICommandHandler<MarkNotificationAsRead>, MarkNotificationAsReadHandler>();
         services.AddScoped<ICommandHandler<MarkAllNotificationsAsRead>, MarkAllNotificationsAsReadHandler>();
+        services.AddScoped<ICommandHandler<UpdateNotificationPreferences>, UpdateNotificationPreferencesHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -148,6 +149,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetDocumentCategories, IEnumerable<DocumentCategoryDto>>, GetDocumentCategoriesHandler>();
         services.AddScoped<IQueryHandler<GetNotifications, PaginatedResultDto<NotificationDto>>, GetNotificationsHandler>();
         services.AddScoped<IQueryHandler<GetUnreadNotificationCount, int>, GetUnreadNotificationCountHandler>();
+        services.AddScoped<IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>>, GetNotificationPreferencesHandler>();
 
         return services;
     }
