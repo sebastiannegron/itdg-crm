@@ -74,13 +74,4 @@ jobs:
           git commit -m "Fix package-lock.json sync with package.json"
           git push
 
-      - name: Mark PR as ready for review
-        run: |
-          PR_NUMBER="${{ github.event.pull_request.number }}"
-          IS_DRAFT=$(gh pr view "$PR_NUMBER" --json isDraft --jq '.isDraft')
-          if [ "$IS_DRAFT" = "true" ]; then
-            echo "Marking PR #$PR_NUMBER as ready for review..."
-            gh pr ready "$PR_NUMBER"
-          else
-            echo "PR #$PR_NUMBER is already ready for review."
-          fi
+      # Draft → ready is handled by copilot-auto-merge.yml after CI passes
