@@ -1,11 +1,13 @@
 import { cn } from "@/lib/utils";
 
-type ClientStatus = "Active" | "Pending Docs" | "Awaiting Payment";
+type ClientStatus = "Active" | "Inactive" | "Suspended" | "Pending Docs" | "Awaiting Payment";
 type TaskStatus = "To Do" | "In Progress" | "Review" | "Done";
 type Status = ClientStatus | TaskStatus;
 
 const statusStyles: Record<Status, string> = {
   Active: "text-[#065F46] bg-[#ECFDF5]",
+  Inactive: "text-[#374151] bg-[#F3F4F6]",
+  Suspended: "text-[#991B1B] bg-[#FEF2F2]",
   "Pending Docs": "text-[#92400E] bg-[#FFFBEB]",
   "Awaiting Payment": "text-[#991B1B] bg-[#FEF2F2]",
   "To Do": "text-[#374151] bg-[#F9FAFB]",
