@@ -1,7 +1,15 @@
 # Copilot Coding Agent Instructions — ITDG CRM Platform
 
 > This file instructs GitHub Copilot coding agents on how to write code in this repository.
-> Read `docs/ARCHITECTURE.md` for full system context before starting any task.
+
+## Context Management — IMPORTANT
+
+To avoid exceeding the model's token limit (64K prompt tokens):
+- **Do NOT read entire large files** like `docs/ARCHITECTURE.md` (1100+ lines) or `docs/EPICS.md` (450+ lines) in full. Only read the specific section relevant to your task.
+- **Read only the files you need** — use the issue description and acceptance criteria to determine which files to read.
+- **Prefer targeted reads** — if you need Section 5 of ARCHITECTURE.md, read lines 268-577, not the whole file.
+- **Limit file exploration** — do not recursively read all files in a directory. Read 2-3 example files to understand patterns, then write code.
+- **Architecture reference sections**: Section 5 (Backend): lines 268-577, Section 6 (Database): lines 580-641, Section 7 (API): lines 644-725, Section 8 (Frontend): lines 728-877, Section 9 (UI/UX): lines 880-999.
 
 ---
 
@@ -435,3 +443,4 @@ z.string().min(1).refine(val => !codeRegex.test(val) && !urlRegex.test(val), "In
 14. Skipping `codeRegex`/`urlRegex` validation on user text inputs
 15. **Forgetting to run `npm install` after changing `package.json`** — CI uses `npm ci` which FAILS if the lock file is out of sync. Always run `npm install` and commit both files together
 16. Adding a NuGet package without verifying `dotnet restore` and `dotnet build` succeed
+17. **Reading too many files** — only read files directly relevant to the task. Do NOT read the full ARCHITECTURE.md or EPICS.md; read only the section you need. Exceeding the 64K token limit will crash the agent.
