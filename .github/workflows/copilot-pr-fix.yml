@@ -21,6 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
+          fetch-depth: 0
           # Use PAT so the commit triggers CI workflows
           token: ${{ secrets.COPILOT_TRIGGER_PAT }}
 
@@ -28,6 +29,7 @@ jobs:
         id: check-deps
         run: |
           # Check if package.json changed in this PR
+          git fetch origin ${{ github.base_ref }}
           CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- src/web/package.json)
           if [ -n "$CHANGED" ]; then
             echo "Package.json was modified. Checking lock file sync..."
