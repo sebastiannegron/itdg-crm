@@ -31,6 +31,30 @@ export interface GetClientsParams {
   search?: string;
 }
 
+export interface CreateClientParams {
+  name: string;
+  contact_email?: string;
+  phone?: string;
+  address?: string;
+  tier_id?: string;
+  status: string;
+  industry_tag?: string;
+  notes?: string;
+  custom_fields?: string;
+}
+
+export interface UpdateClientParams {
+  name: string;
+  contact_email?: string;
+  phone?: string;
+  address?: string;
+  tier_id?: string;
+  status: string;
+  industry_tag?: string;
+  notes?: string;
+  custom_fields?: string;
+}
+
 export async function getClients(
   params?: GetClientsParams,
 ): Promise<PaginatedResult<ClientDto>> {
@@ -46,4 +70,27 @@ export async function getClients(
   const path = `/api/v1/Clients${query ? `?${query}` : ""}`;
 
   return apiFetch<PaginatedResult<ClientDto>>(path);
+}
+
+export async function getClientById(clientId: string): Promise<ClientDto> {
+  return apiFetch<ClientDto>(`/api/v1/Clients/${clientId}`);
+}
+
+export async function createClient(
+  params: CreateClientParams,
+): Promise<ClientDto> {
+  return apiFetch<ClientDto>("/api/v1/Clients", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
+export async function updateClient(
+  clientId: string,
+  params: UpdateClientParams,
+): Promise<void> {
+  return apiFetch<void>(`/api/v1/Clients/${clientId}`, {
+    method: "PUT",
+    body: JSON.stringify(params),
+  });
 }
