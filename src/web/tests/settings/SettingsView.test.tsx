@@ -38,6 +38,26 @@ vi.mock("@/app/[locale]/(admin)/settings/actions", () => ({
     success: true,
     data: [],
   }),
+  getDocumentCategoriesAction: vi.fn().mockResolvedValue({
+    success: true,
+    data: [],
+  }),
+  createDocumentCategoryAction: vi.fn().mockResolvedValue({
+    success: true,
+    message: "Category created successfully",
+  }),
+  updateDocumentCategoryAction: vi.fn().mockResolvedValue({
+    success: true,
+    message: "Category updated successfully",
+  }),
+  deleteDocumentCategoryAction: vi.fn().mockResolvedValue({
+    success: true,
+    message: "Category deleted successfully",
+  }),
+  reorderDocumentCategoriesAction: vi.fn().mockResolvedValue({
+    success: true,
+    message: "Categories reordered successfully",
+  }),
 }));
 
 import SettingsView from "@/app/[locale]/(admin)/settings/SettingsView";
