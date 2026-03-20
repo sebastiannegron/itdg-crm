@@ -143,9 +143,9 @@ jobs:
           GH_TOKEN: ${{ secrets.COPILOT_TRIGGER_PAT }}
         run: |
           ISSUE=${{ steps.find.outputs.issue }}
-          echo "Triggering Copilot on #$ISSUE..."
-          gh issue comment "$ISSUE" --body "@copilot"
-          echo "Successfully triggered Copilot on #$ISSUE"
+          echo "Assigning Copilot to #$ISSUE..."
+          gh issue edit "$ISSUE" --add-assignee "@copilot"
+          echo "Successfully assigned Copilot to #$ISSUE"
 
       # Save cooldown timestamp only after a successful assignment
       - name: Save cooldown timestamp
