@@ -12,5 +12,6 @@ public interface IClientRepository : IGenericRepository<Client>
         ClientStatus? status = null,
         Guid? tierId = null,
         string? search = null,
+        Guid? assignedUserId = null,
         CancellationToken cancellationToken = default);
 }

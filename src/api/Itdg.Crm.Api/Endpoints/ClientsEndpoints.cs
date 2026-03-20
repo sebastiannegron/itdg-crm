@@ -20,7 +20,7 @@ public static class ClientsEndpoints
             .Produces<PaginatedResultDto<ClientDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{client_id:guid}", GetClientByIdEndpoint)
-            .RequireAuthorization(AuthorizationPolicyNames.ClientAssignment)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
             .WithName("GetClientById")
             .Produces<ClientDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);

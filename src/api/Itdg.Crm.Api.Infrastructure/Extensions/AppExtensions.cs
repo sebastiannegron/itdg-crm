@@ -68,6 +68,9 @@ public static class AppExtensions
         // Tenant provider
         services.AddScoped<ITenantProvider, Itdg.Crm.Api.Infrastructure.TenantProvider.ClaimsTenantProvider>();
 
+        // Current user provider
+        services.AddScoped<ICurrentUserProvider, Itdg.Crm.Api.Infrastructure.TenantProvider.ClaimsCurrentUserProvider>();
+
         // Gmail options validation
         services.AddOptionsWithValidateOnStart<GmailOptions>()
             .Bind(configuration.GetSection(GmailOptions.Key))
