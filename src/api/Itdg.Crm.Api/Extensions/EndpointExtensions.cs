@@ -8,6 +8,7 @@ public static class EndpointExtensions
     {
         app.MapHealthEndpoints();
         app.MapTemplatesEndpoints();
+        app.MapPortalEndpoints();
         return app;
     }
 }

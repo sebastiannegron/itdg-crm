@@ -72,6 +72,7 @@ public static class AppExtensions
         services.AddScoped<ITemplateRepository, TemplateRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IClientAssignmentRepository, ClientAssignmentRepository>();
 
@@ -82,12 +83,16 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<CreateTemplate>, CreateTemplateHandler>();
         services.AddScoped<ICommandHandler<UpdateTemplate>, UpdateTemplateHandler>();
         services.AddScoped<ICommandHandler<RetireTemplate>, RetireTemplateHandler>();
+        services.AddScoped<ICommandHandler<SendPortalMessage>, SendPortalMessageHandler>();
+        services.AddScoped<ICommandHandler<MarkMessageAsRead>, MarkMessageAsReadHandler>();
       
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
         services.AddScoped<IQueryHandler<GetClients, PaginatedResultDto<ClientDto>>, GetClientsHandler>();
         services.AddScoped<IQueryHandler<GetTemplates, IEnumerable<CommunicationTemplateDto>>, GetTemplatesHandler>();
         services.AddScoped<IQueryHandler<GetTemplateById, CommunicationTemplateDto>, GetTemplateByIdHandler>();
+        services.AddScoped<IQueryHandler<GetPortalMessages, IEnumerable<MessageDto>>, GetPortalMessagesHandler>();
+        services.AddScoped<IQueryHandler<GetPortalMessageById, MessageDto>, GetPortalMessageByIdHandler>();
 
         return services;
     }
