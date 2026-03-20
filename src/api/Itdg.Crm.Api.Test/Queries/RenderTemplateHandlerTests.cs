@@ -56,10 +56,10 @@ public class RenderTemplateHandlerTests
         _repository.GetByIdAsync(templateId, Arg.Any<CancellationToken>())
             .Returns(template);
 
-        _renderer.Render(template.SubjectTemplate, Arg.Any<IDictionary<string, string>>())
+        _renderer.Render(template.SubjectTemplate, mergeFields)
             .Returns("Payment Due 2026-04-01");
 
-        _renderer.Render(template.BodyTemplate, Arg.Any<IDictionary<string, string>>())
+        _renderer.Render(template.BodyTemplate, mergeFields)
             .Returns("Dear John Doe, your payment of $500.00 is due on 2026-04-01.");
 
         // Act

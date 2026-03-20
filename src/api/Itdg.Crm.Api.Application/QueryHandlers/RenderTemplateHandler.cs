@@ -37,6 +37,8 @@ public class RenderTemplateHandler : IQueryHandler<RenderTemplate, RenderedTempl
         var renderedSubject = _renderer.Render(template.SubjectTemplate, query.MergeFields);
         var renderedBody = _renderer.Render(template.BodyTemplate, query.MergeFields);
 
+        _logger.LogInformation("Successfully rendered template {TemplateId} | CorrelationId: {CorrelationId}", query.TemplateId, correlationId);
+
         return new RenderedTemplateDto(renderedSubject, renderedBody);
     }
 }
