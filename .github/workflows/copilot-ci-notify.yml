@@ -26,6 +26,9 @@ jobs:
 
           PR_NUMBER=$(gh pr list --author "app/copilot-swe-agent" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
           if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER=$(gh pr list --author "Copilot" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
+          fi
+          if [ -z "$PR_NUMBER" ]; then
             echo "No copilot PR found for branch $BRANCH."
             exit 0
           fi

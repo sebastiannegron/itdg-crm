@@ -49,7 +49,7 @@ jobs:
             PR_NUMBER="${{ inputs.pr_number }}"
             # Verify PR is from copilot
             AUTHOR=$(gh pr view "$PR_NUMBER" --json author --jq '.author.login')
-            if [ "$AUTHOR" != "copilot-swe-agent" ] && [ "$AUTHOR" != "app/copilot-swe-agent" ]; then
+            if [ "$AUTHOR" != "Copilot" ] && [ "$AUTHOR" != "copilot-swe-agent" ] && [ "$AUTHOR" != "app/copilot-swe-agent" ]; then
               echo "PR #$PR_NUMBER is not from copilot (author: $AUTHOR). Exiting."
               echo "prs=" >> "$GITHUB_OUTPUT"
               exit 0
@@ -59,7 +59,7 @@ jobs:
           elif [ "${{ github.event_name }}" = "pull_request" ]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
             AUTHOR="${{ github.event.pull_request.user.login }}"
-            if [ "$AUTHOR" != "copilot-swe-agent[bot]" ] && [ "$AUTHOR" != "copilot-swe-agent" ]; then
+            if [ "$AUTHOR" != "Copilot" ] && [ "$AUTHOR" != "copilot-swe-agent[bot]" ] && [ "$AUTHOR" != "copilot-swe-agent" ]; then
               echo "PR #$PR_NUMBER is not from copilot (author: $AUTHOR). Exiting."
               echo "prs=" >> "$GITHUB_OUTPUT"
               exit 0
@@ -75,7 +75,11 @@ jobs:
               exit 0
             fi
 
+            # Try both author identifiers — GitHub may use either depending on context
             PR_NUMBER=$(gh pr list --author "app/copilot-swe-agent" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
+            if [ -z "$PR_NUMBER" ]; then
+              PR_NUMBER=$(gh pr list --author "Copilot" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
+            fi
             if [ -z "$PR_NUMBER" ]; then
               echo "No copilot PR found for branch $BRANCH."
               echo "prs=" >> "$GITHUB_OUTPUT"

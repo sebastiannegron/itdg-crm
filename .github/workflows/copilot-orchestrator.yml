@@ -101,7 +101,9 @@ jobs:
         run: |
           MAX=${{ inputs.max_concurrent || '1' }}
           # Count open PRs by copilot as a proxy for active tasks
-          CURRENT=$(gh pr list --author "app/copilot-swe-agent" --state open --json number --jq 'length')
+          COUNT_1=$(gh pr list --author "app/copilot-swe-agent" --state open --json number --jq 'length')
+          COUNT_2=$(gh pr list --author "Copilot" --state open --json number --jq 'length')
+          CURRENT=$((COUNT_1 > COUNT_2 ? COUNT_1 : COUNT_2))
           echo "Current copilot PRs: $CURRENT / Max: $MAX"
 
           if [ "$CURRENT" -ge "$MAX" ]; then
