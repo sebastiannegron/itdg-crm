@@ -15,6 +15,7 @@ public static class EndpointExtensions
         app.MapTiersEndpoints();
         app.MapDashboardEndpoints();
         app.MapDocumentCategoriesEndpoints();
+        app.MapNotificationsEndpoints();
         return app;
     }
 }

@@ -21,15 +21,20 @@ import {
   NotificationPanel,
   type NotificationItem,
 } from "@/app/_components/NotificationPanel";
+import type { NotificationType } from "@/app/_components/NotificationDot";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/app/_components/ui/tooltip";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/app/_components/ui/sheet";
 import { Badge } from "@/app/_components/ui/badge";
+import {
+  getNotificationsAction,
+  markAllNotificationsAsReadAction,
+} from "./notification-actions";
 
 interface NavItem {
   href: string;
@@ -56,6 +61,17 @@ const navItems: NavItem[] = [
 //   labelKey: "nav_settings",
 //   icon: Settings,
 // };
+
+const eventTypeMap: Record<string, NotificationType> = {
+  DocumentUploaded: "document",
+  PaymentCompleted: "payment",
+  PaymentFailed: "payment",
+  TaskAssigned: "task",
+  TaskDueSoon: "task",
+  EscalationReceived: "escalation",
+  PortalMessageReceived: "message",
+  SystemAlert: "system",
+};
 
 function DesktopNavLink({
   item,
@@ -171,8 +187,30 @@ export default function AdminSidebar({
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const labels = fieldnames[locale];
 
-  const handleMarkAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  const loadNotifications = useCallback(async () => {
+    const result = await getNotificationsAction(1, 10);
+    if (result.success && result.data) {
+      setNotifications(
+        result.data.items.map((n) => ({
+          id: n.notification_id,
+          type: eventTypeMap[n.event_type] ?? "system",
+          message: n.body,
+          timestamp: new Date(n.created_at).toLocaleString(),
+          read: n.status === "Read",
+        })),
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
+
+  const handleMarkAllRead = async () => {
+    const result = await markAllNotificationsAsReadAction();
+    if (result.success) {
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    }
   };
 
   return (

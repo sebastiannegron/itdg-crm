@@ -128,6 +128,8 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<UpdateDocumentCategory>, UpdateDocumentCategoryHandler>();
         services.AddScoped<ICommandHandler<DeleteDocumentCategory>, DeleteDocumentCategoryHandler>();
         services.AddScoped<ICommandHandler<ReorderDocumentCategories>, ReorderDocumentCategoriesHandler>();
+        services.AddScoped<ICommandHandler<MarkNotificationAsRead>, MarkNotificationAsReadHandler>();
+        services.AddScoped<ICommandHandler<MarkAllNotificationsAsRead>, MarkAllNotificationsAsReadHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -144,6 +146,8 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetDashboardSummary, DashboardSummaryDto>, GetDashboardSummaryHandler>();
         services.AddScoped<IQueryHandler<GetDashboardLayout, DashboardLayoutDto?>, GetDashboardLayoutHandler>();
         services.AddScoped<IQueryHandler<GetDocumentCategories, IEnumerable<DocumentCategoryDto>>, GetDocumentCategoriesHandler>();
+        services.AddScoped<IQueryHandler<GetNotifications, PaginatedResultDto<NotificationDto>>, GetNotificationsHandler>();
+        services.AddScoped<IQueryHandler<GetUnreadNotificationCount, int>, GetUnreadNotificationCountHandler>();
 
         return services;
     }
