@@ -70,12 +70,15 @@ public static class AppExtensions
 
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
+        services.AddScoped<IEmailSender, NoOpEmailSender>();
+        services.AddScoped<INotificationService, NotificationService>();
 
         // Repositories
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<ITemplateRepository, TemplateRepository>();
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
+        services.AddScoped<INotificationPreferenceRepository, NotificationPreferenceRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IClientAssignmentRepository, ClientAssignmentRepository>();
