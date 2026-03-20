@@ -3,6 +3,8 @@ name: Copilot Auto-Merge
 on:
   check_suite:
     types: [completed]
+  pull_request:
+    types: [ready_for_review]
   workflow_dispatch:
     inputs:
       pr_number:
@@ -21,9 +23,10 @@ env:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    # Only run on successful check suites or manual dispatch
+    # Only run on successful check suites, ready_for_review, or manual dispatch
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'pull_request' ||
       github.event.check_suite.conclusion == 'success'
     steps:
       - name: Checkout
@@ -52,8 +55,19 @@ jobs:
               exit 0
             fi
             echo "prs=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+          elif [ "${{ github.event_name }}" = "pull_request" ]; then
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+            AUTHOR="${{ github.event.pull_request.user.login }}"
+            if [ "$AUTHOR" != "copilot-swe-agent[bot]" ] && [ "$AUTHOR" != "copilot-swe-agent" ]; then
+              echo "PR #$PR_NUMBER is not from copilot (author: $AUTHOR). Exiting."
+              echo "prs=" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "prs=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
           else
-            # Find open copilot PRs on the branch that triggered the check suite
+            # check_suite event — find copilot PR on the triggering branch
             BRANCH="${{ github.event.check_suite.head_branch }}"
             if [ -z "$BRANCH" ]; then
               echo "No branch found in check suite. Exiting."
@@ -61,7 +75,6 @@ jobs:
               exit 0
             fi
 
-            # Check if this branch has a copilot PR
             PR_NUMBER=$(gh pr list --author "app/copilot-swe-agent" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')
             if [ -z "$PR_NUMBER" ]; then
               echo "No copilot PR found for branch $BRANCH."
@@ -78,10 +91,18 @@ jobs:
           PR_NUMBER="${{ steps.find-prs.outputs.prs }}"
           echo "Checking PR #$PR_NUMBER..."
 
+          # Skip draft PRs — wait until marked ready for review
+          IS_DRAFT=$(gh pr view "$PR_NUMBER" --json isDraft --jq '.isDraft')
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "PR #$PR_NUMBER is still a draft. Skipping until ready for review."
+            echo "merged=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           # Verify all checks pass
           CHECKS_STATUS=$(gh pr checks "$PR_NUMBER" --json state --jq '[.[] | select(.state != "SUCCESS" and .state != "SKIPPED")] | length')
           if [ "$CHECKS_STATUS" != "0" ]; then
-            echo "PR #$PR_NUMBER has failing checks. Skipping merge."
+            echo "PR #$PR_NUMBER has failing or pending checks. Skipping merge."
             echo "merged=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -98,11 +119,11 @@ jobs:
           PR_NUMBER="${{ steps.merge.outputs.pr_number }}"
           PR_BODY=$(gh pr view "$PR_NUMBER" --json body --jq '.body')
 
-          # Try to extract issue title from <issue_title> tags
-          ISSUE_TITLE=$(echo "$PR_BODY" | grep -oP '(?<=<issue_title>).*?(?=</issue_title>)' | head -1 || true)
-
           # Try Closes #N pattern first
           CLOSES_NUMBER=$(echo "$PR_BODY" | grep -oP '(?i)closes?\s+#\K\d+' | head -1 || true)
+
+          # Try to extract issue title from <issue_title> tags
+          ISSUE_TITLE=$(echo "$PR_BODY" | grep -oP '(?<=<issue_title>).*?(?=</issue_title>)' | head -1 || true)
 
           if [ -n "$CLOSES_NUMBER" ]; then
             echo "Closing issue #$CLOSES_NUMBER (from Closes #N)..."
