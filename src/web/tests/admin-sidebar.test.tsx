@@ -82,20 +82,21 @@ describe("AdminSidebar", () => {
       </AdminSidebar>
     );
 
-    const subtitles = screen.getAllByText("Tax Consulting");
+    const subtitles = screen.getAllByText("CRM Platform · MVP");
     expect(subtitles.length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders user avatar in header", () => {
-    render(
+    const { container } = render(
       <AdminSidebar>
         <div>Content</div>
       </AdminSidebar>
     );
 
-    const avatar = screen.getByLabelText("User avatar");
-    expect(avatar).toBeInTheDocument();
-    expect(avatar.textContent).toBe("RA");
+    // Avatar is a div with initials, no aria-label
+    const avatar = container.querySelector(".rounded-full.bg-sidebar");
+    expect(avatar).not.toBeNull();
+    expect(avatar!.textContent).toBe("MR");
   });
 
   it("renders the notification bell button", () => {

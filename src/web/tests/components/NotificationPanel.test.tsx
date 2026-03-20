@@ -109,13 +109,20 @@ describe("NotificationPanel", () => {
 
   it("closes panel when clicking outside", async () => {
     const user = userEvent.setup();
+    render(
+      <NotificationPanel
+        {...defaultProps}
+        notifications={sampleNotifications}
+      />
+    );
 
     await user.click(
       screen.getByRole("button", { name: "Notifications" })
     );
     expect(screen.getByRole("dialog")).toBeInTheDocument();
 
-    await user.click(screen.getByTestId("outside"));
+    // Click outside the panel to close it
+    await user.click(document.body);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 

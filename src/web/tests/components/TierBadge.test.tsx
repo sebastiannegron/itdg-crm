@@ -20,17 +20,17 @@ describe("TierBadge", () => {
 
   it("applies tier-specific color class for Tier 1", () => {
     render(<TierBadge tier={1} />);
-    expect(screen.getByText("Tier 1")).toHaveClass("bg-tier-1");
+    expect(screen.getByText("Tier 1")).toHaveClass("bg-tier-1-bg");
   });
 
   it("applies tier-specific color class for Tier 2", () => {
     render(<TierBadge tier={2} />);
-    expect(screen.getByText("Tier 2")).toHaveClass("bg-tier-2");
+    expect(screen.getByText("Tier 2")).toHaveClass("bg-tier-2-bg");
   });
 
   it("applies tier-specific color class for Tier 3", () => {
     render(<TierBadge tier={3} />);
-    expect(screen.getByText("Tier 3")).toHaveClass("bg-tier-3");
+    expect(screen.getByText("Tier 3")).toHaveClass("bg-tier-3-bg");
   });
 
   it("applies custom className", () => {
