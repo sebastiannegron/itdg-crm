@@ -75,6 +75,7 @@ public static class AppExtensions
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IClientAssignmentRepository, ClientAssignmentRepository>();
+        services.AddScoped<IDocumentRepository, DocumentRepository>();
 
         // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
