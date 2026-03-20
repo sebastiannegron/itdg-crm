@@ -9,6 +9,7 @@ using Itdg.Crm.Api.Application.Queries;
 using Itdg.Crm.Api.Application.QueryHandlers;
 using Itdg.Crm.Api.Domain.GeneralConstants;
 using Itdg.Crm.Api.Infrastructure.Authorization;
+using Itdg.Crm.Api.Infrastructure.Services;
 using Itdg.Crm.Api.Infrastructure.Data;
 using Itdg.Crm.Api.Infrastructure.Interceptors;
 using Itdg.Crm.Api.Infrastructure.Data.Interceptors;
@@ -67,6 +68,9 @@ public static class AppExtensions
         // Tenant provider
         services.AddScoped<ITenantProvider, Itdg.Crm.Api.Infrastructure.TenantProvider.ClaimsTenantProvider>();
 
+        // Services
+        services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
+
         // Repositories
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<ITemplateRepository, TemplateRepository>();
@@ -96,6 +100,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetTemplateById, CommunicationTemplateDto>, GetTemplateByIdHandler>();
         services.AddScoped<IQueryHandler<GetPortalMessages, IEnumerable<MessageDto>>, GetPortalMessagesHandler>();
         services.AddScoped<IQueryHandler<GetPortalMessageById, MessageDto>, GetPortalMessageByIdHandler>();
+        services.AddScoped<IQueryHandler<RenderTemplate, RenderedTemplateDto>, RenderTemplateHandler>();
 
         return services;
     }
