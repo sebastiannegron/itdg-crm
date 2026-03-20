@@ -36,6 +36,7 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     public DbSet<Document> Documents => Set<Document>();
     public DbSet<DocumentCategory> DocumentCategories => Set<DocumentCategory>();
     public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
+    public DbSet<DashboardLayout> DashboardLayouts => Set<DashboardLayout>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

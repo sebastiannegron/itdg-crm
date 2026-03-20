@@ -102,6 +102,7 @@ public static class AppExtensions
         services.AddScoped<IClientAssignmentRepository, ClientAssignmentRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
+        services.AddScoped<IDashboardLayoutRepository, DashboardLayoutRepository>();
 
         // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
@@ -119,6 +120,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<InviteUser>, InviteUserHandler>();
         services.AddScoped<ICommandHandler<CreateTier>, CreateTierHandler>();
         services.AddScoped<ICommandHandler<UpdateTier>, UpdateTierHandler>();
+        services.AddScoped<ICommandHandler<SaveDashboardLayout>, SaveDashboardLayoutHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -133,6 +135,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetTiers, IEnumerable<ClientTierDto>>, GetTiersHandler>();
         services.AddScoped<IQueryHandler<GetClientAssignments, IEnumerable<ClientAssignmentDto>>, GetClientAssignmentsHandler>();
         services.AddScoped<IQueryHandler<GetDashboardSummary, DashboardSummaryDto>, GetDashboardSummaryHandler>();
+        services.AddScoped<IQueryHandler<GetDashboardLayout, DashboardLayoutDto?>, GetDashboardLayoutHandler>();
 
         return services;
     }
