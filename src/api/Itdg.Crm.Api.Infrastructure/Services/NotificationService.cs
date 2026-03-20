@@ -36,6 +36,14 @@ public class NotificationService : INotificationService
         activity?.SetTag("UserId", userId);
         activity?.SetTag("EventType", eventType.ToString());
 
+        if (metadata is not null)
+        {
+            foreach (var (key, value) in metadata)
+            {
+                activity?.SetTag($"Metadata.{key}", value);
+            }
+        }
+
         _logger.LogInformation("Sending notification to user {UserId} for event {EventType}", userId, eventType);
 
         var enabledChannels = await ResolveEnabledChannelsAsync(userId, eventType, cancellationToken);
