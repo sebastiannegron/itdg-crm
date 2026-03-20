@@ -123,7 +123,6 @@ export default function ClientDetailView({ client }: ClientDetailViewProps) {
         if (result.success) {
           setStatus("success");
           setIsEditing(false);
-          router.push(`/clients/${client.client_id}`);
         } else {
           setStatus("failed");
           setErrorMessage(result.message || t.clients_save_error);
@@ -409,7 +408,7 @@ export default function ClientDetailView({ client }: ClientDetailViewProps) {
                   onClick={handleCancelEdit}
                   disabled={isPending}
                 >
-                  {t.clients_back_to_list}
+                  {t.clients_cancel}
                 </Button>
               </div>
             </form>
