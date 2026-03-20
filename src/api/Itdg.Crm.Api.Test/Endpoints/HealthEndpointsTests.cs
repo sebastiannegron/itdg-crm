@@ -20,6 +20,8 @@ public class HealthEndpointsTests : IClassFixture<WebApplicationFactory<Program>
                     ["AzureAd:TenantId"] = "00000000-0000-0000-0000-000000000000",
                     ["AzureAd:ClientId"] = "00000000-0000-0000-0000-000000000000",
                     ["AzureAd:Audience"] = "api://00000000-0000-0000-0000-000000000000",
+                    ["Gmail:ClientId"] = "test-client-id",
+                    ["Gmail:ClientSecret"] = "test-client-secret",
                 });
             });
 

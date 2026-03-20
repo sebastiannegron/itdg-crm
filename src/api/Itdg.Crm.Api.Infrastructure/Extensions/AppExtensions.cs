@@ -68,10 +68,16 @@ public static class AppExtensions
         // Tenant provider
         services.AddScoped<ITenantProvider, Itdg.Crm.Api.Infrastructure.TenantProvider.ClaimsTenantProvider>();
 
+        // Gmail options validation
+        services.AddOptionsWithValidateOnStart<GmailOptions>()
+            .Bind(configuration.GetSection(GmailOptions.Key))
+            .ValidateDataAnnotations();
+
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
         services.AddScoped<IEmailSender, NoOpEmailSender>();
         services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<IGmailService, GmailService>();
 
         // Repositories
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
