@@ -24,4 +24,47 @@ public class NotificationRepository : GenericRepository<Notification>, INotifica
             .OrderByDescending(n => n.CreatedAt)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<(IReadOnlyList<Notification> Items, int TotalCount)> GetPagedByUserIdAsync(Guid userId, int page, int pageSize, NotificationStatus? status = null, CancellationToken cancellationToken = default)
+    {
+        var query = Context.Set<Notification>()
+            .Where(n => n.UserId == userId);
+
+        if (status.HasValue)
+        {
+            query = query.Where(n => n.Status == status.Value);
+        }
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(n => n.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
+    public async Task<int> GetUnreadCountByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await Context.Set<Notification>()
+            .Where(n => n.UserId == userId && n.Status != NotificationStatus.Read)
+            .CountAsync(cancellationToken);
+    }
+
+    public async Task MarkAllAsReadByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var unreadNotifications = await Context.Set<Notification>()
+            .Where(n => n.UserId == userId && n.Status != NotificationStatus.Read)
+            .ToListAsync(cancellationToken);
+
+        foreach (var notification in unreadNotifications)
+        {
+            notification.Status = NotificationStatus.Read;
+            notification.ReadAt = DateTimeOffset.UtcNow;
+        }
+
+        await Context.SaveChangesAsync(cancellationToken);
+    }
 }
