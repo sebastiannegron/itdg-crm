@@ -110,7 +110,7 @@ public class GetNotificationsHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_FiltersbyStatus_WhenStatusProvided()
+    public async Task HandleAsync_FiltersByStatus_WhenStatusProvided()
     {
         // Arrange
         var userId = Guid.NewGuid();
