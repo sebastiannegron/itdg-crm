@@ -112,6 +112,8 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<UnassignClient>, UnassignClientHandler>();
         services.AddScoped<ICommandHandler<UpdateUser>, UpdateUserHandler>();
         services.AddScoped<ICommandHandler<InviteUser>, InviteUserHandler>();
+        services.AddScoped<ICommandHandler<CreateTier>, CreateTierHandler>();
+        services.AddScoped<ICommandHandler<UpdateTier>, UpdateTierHandler>();
       
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -123,6 +125,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<RenderTemplate, RenderedTemplateDto>, RenderTemplateHandler>();
         services.AddScoped<IQueryHandler<GetUsers, PaginatedResultDto<UserDto>>, GetUsersHandler>();
         services.AddScoped<IQueryHandler<GetUserById, UserDto>, GetUserByIdHandler>();
+        services.AddScoped<IQueryHandler<GetTiers, IEnumerable<ClientTierDto>>, GetTiersHandler>();
 
         return services;
     }

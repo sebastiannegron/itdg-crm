@@ -11,6 +11,7 @@ public static class EndpointExtensions
         app.MapTemplatesEndpoints();
         app.MapPortalEndpoints();
         app.MapUsersEndpoints();
+        app.MapTiersEndpoints();
         return app;
     }
 }
