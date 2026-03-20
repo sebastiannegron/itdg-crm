@@ -1,0 +1,86 @@
+name: Copilot PR Fix
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  fix-and-ready:
+    runs-on: ubuntu-latest
+    # Only run on copilot branches
+    if: startsWith(github.head_ref, 'copilot/')
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          # Use PAT so the commit triggers CI workflows
+          token: ${{ secrets.COPILOT_TRIGGER_PAT }}
+
+      - name: Check if package.json was modified
+        id: check-deps
+        run: |
+          # Check if package.json changed in this PR
+          CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD -- src/web/package.json)
+          if [ -n "$CHANGED" ]; then
+            echo "Package.json was modified. Checking lock file sync..."
+            echo "needs_fix=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No package.json changes detected."
+            echo "needs_fix=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Node.js
+        if: steps.check-deps.outputs.needs_fix == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Fix package-lock.json
+        if: steps.check-deps.outputs.needs_fix == 'true'
+        id: fix-lock
+        working-directory: src/web
+        run: |
+          # Check if npm ci fails (lock file out of sync)
+          if npm ci 2>/dev/null; then
+            echo "Lock file is already in sync."
+            echo "fixed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Lock file out of sync. Running npm install..."
+            npm install
+            # Check if lock file actually changed
+            if git diff --quiet src/web/package-lock.json 2>/dev/null; then
+              echo "No lock file changes needed."
+              echo "fixed=false" >> "$GITHUB_OUTPUT"
+            else
+              echo "Lock file updated."
+              echo "fixed=true" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      - name: Commit lock file fix
+        if: steps.fix-lock.outputs.fixed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add src/web/package-lock.json
+          git commit -m "Fix package-lock.json sync with package.json"
+          git push
+
+      - name: Mark PR as ready for review
+        run: |
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          IS_DRAFT=$(gh pr view "$PR_NUMBER" --json isDraft --jq '.isDraft')
+          if [ "$IS_DRAFT" = "true" ]; then
+            echo "Marking PR #$PR_NUMBER as ready for review..."
+            gh pr ready "$PR_NUMBER"
+          else
+            echo "PR #$PR_NUMBER is already ready for review."
+          fi
