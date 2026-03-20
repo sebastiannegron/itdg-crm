@@ -74,6 +74,9 @@ public static class AppExtensions
         // Current user provider
         services.AddScoped<ICurrentUserProvider, TenantProvider.ClaimsCurrentUserProvider>();
 
+        // Google Drive token provider
+        services.AddScoped<IGoogleDriveTokenProvider, TenantProvider.ClaimsGoogleDriveTokenProvider>();
+
         // Gmail options validation
         services.AddOptionsWithValidateOnStart<GmailOptions>()
             .Bind(configuration.GetSection(GmailOptions.Key))
