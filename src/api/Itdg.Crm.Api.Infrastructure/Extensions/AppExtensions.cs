@@ -47,7 +47,7 @@ public static class AppExtensions
         services.AddOptionsWithValidateOnStart<AzureAdOptions>()
             .Bind(configuration.GetSection(AzureAdOptions.Key))
             .ValidateDataAnnotations();
-      
+
         // Interceptors
         services.AddSingleton<AuditableEntityInterceptor>();
         services.AddScoped<AuditSaveChangesInterceptor>();
@@ -58,8 +58,8 @@ public static class AppExtensions
             options.UseSqlServer(configuration.GetConnectionString("CrmDb"))
               .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
             options.AddInterceptors(serviceProvider.GetRequiredService<AuditSaveChangesInterceptor>());
-//             options.UseSqlServer(configuration.GetConnectionString(DatabaseOptions.ConnectionStringName))
-//                 .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
+            //             options.UseSqlServer(configuration.GetConnectionString(DatabaseOptions.ConnectionStringName))
+            //                 .AddInterceptors(serviceProvider.GetRequiredService<AuditableEntityInterceptor>());
         });
 
         services.AddScoped<IApplicationDbContext>(provider =>
@@ -69,10 +69,10 @@ public static class AppExtensions
             provider.GetRequiredService<CrmDbContext>());
 
         // Tenant provider
-        services.AddScoped<ITenantProvider, Itdg.Crm.Api.Infrastructure.TenantProvider.ClaimsTenantProvider>();
+        services.AddScoped<ITenantProvider, TenantProvider.ClaimsTenantProvider>();
 
         // Current user provider
-        services.AddScoped<ICurrentUserProvider, Itdg.Crm.Api.Infrastructure.TenantProvider.ClaimsCurrentUserProvider>();
+        services.AddScoped<ICurrentUserProvider, TenantProvider.ClaimsCurrentUserProvider>();
 
         // Gmail options validation
         services.AddOptionsWithValidateOnStart<GmailOptions>()
@@ -119,7 +119,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<InviteUser>, InviteUserHandler>();
         services.AddScoped<ICommandHandler<CreateTier>, CreateTierHandler>();
         services.AddScoped<ICommandHandler<UpdateTier>, UpdateTierHandler>();
-      
+
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
         services.AddScoped<IQueryHandler<GetClients, PaginatedResultDto<ClientDto>>, GetClientsHandler>();
