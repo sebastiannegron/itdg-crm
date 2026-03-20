@@ -27,6 +27,7 @@ import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import type { PageStatus } from "@/app/[locale]/_shared/app-enums";
 import {
   type ClientDto,
+  type ClientAssignmentDto,
   type UpdateClientFormData,
   type DetailTab,
   DETAIL_TABS,
@@ -34,6 +35,9 @@ import {
   UpdateClientSchema,
 } from "./shared";
 import { updateClientAction } from "./actions";
+import ClientAssignmentsPanel, {
+  type AssociateOption,
+} from "./ClientAssignmentsPanel";
 
 function parseTierNumber(tierName: string | null): 1 | 2 | 3 | null {
   if (!tierName) return null;
@@ -61,9 +65,15 @@ function formatDate(dateStr: string): string {
 
 interface ClientDetailViewProps {
   client: ClientDto | null;
+  assignments?: ClientAssignmentDto[];
+  users?: AssociateOption[];
 }
 
-export default function ClientDetailView({ client }: ClientDetailViewProps) {
+export default function ClientDetailView({
+  client,
+  assignments = [],
+  users = [],
+}: ClientDetailViewProps) {
   const locale = useLocale() as Locale;
   const t = fieldnames[locale];
   const router = useRouter();
@@ -452,6 +462,14 @@ export default function ClientDetailView({ client }: ClientDetailViewProps) {
             </div>
           )}
         </>
+      )}
+
+      {activeTab === "overview" && !isEditing && client && (
+        <ClientAssignmentsPanel
+          clientId={client.client_id}
+          initialAssignments={assignments}
+          users={users}
+        />
       )}
 
       {activeTab === "documents" && (
