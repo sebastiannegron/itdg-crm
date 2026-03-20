@@ -101,6 +101,7 @@ public static class AppExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IClientAssignmentRepository, ClientAssignmentRepository>();
         services.AddScoped<IDocumentRepository, DocumentRepository>();
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
 
         // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
@@ -131,6 +132,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetUserById, UserDto>, GetUserByIdHandler>();
         services.AddScoped<IQueryHandler<GetTiers, IEnumerable<ClientTierDto>>, GetTiersHandler>();
         services.AddScoped<IQueryHandler<GetClientAssignments, IEnumerable<ClientAssignmentDto>>, GetClientAssignmentsHandler>();
+        services.AddScoped<IQueryHandler<GetDashboardSummary, DashboardSummaryDto>, GetDashboardSummaryHandler>();
 
         return services;
     }
