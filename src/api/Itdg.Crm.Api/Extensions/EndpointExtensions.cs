@@ -13,6 +13,7 @@ public static class EndpointExtensions
         app.MapMessagesEndpoints();
         app.MapUsersEndpoints();
         app.MapTiersEndpoints();
+        app.MapDashboardEndpoints();
         return app;
     }
 }
