@@ -124,5 +124,5 @@ jobs:
           ISSUE=${{ steps.find.outputs.issue }}
           echo "Triggering Copilot on #$ISSUE..."
           gh issue comment "$ISSUE" --body "@copilot"
-          gh variable set COPILOT_LAST_ASSIGNMENT_TIME "$(date +%s)"
+          gh variable set COPILOT_LAST_ASSIGNMENT_TIME --body "$(date +%s)"
           echo "Successfully triggered Copilot on #$ISSUE"
