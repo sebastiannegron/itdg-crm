@@ -110,6 +110,8 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<MarkMessageAsRead>, MarkMessageAsReadHandler>();
         services.AddScoped<ICommandHandler<AssignClient>, AssignClientHandler>();
         services.AddScoped<ICommandHandler<UnassignClient>, UnassignClientHandler>();
+        services.AddScoped<ICommandHandler<UpdateUser>, UpdateUserHandler>();
+        services.AddScoped<ICommandHandler<InviteUser>, InviteUserHandler>();
       
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -119,6 +121,8 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetPortalMessages, IEnumerable<MessageDto>>, GetPortalMessagesHandler>();
         services.AddScoped<IQueryHandler<GetPortalMessageById, MessageDto>, GetPortalMessageByIdHandler>();
         services.AddScoped<IQueryHandler<RenderTemplate, RenderedTemplateDto>, RenderTemplateHandler>();
+        services.AddScoped<IQueryHandler<GetUsers, PaginatedResultDto<UserDto>>, GetUsersHandler>();
+        services.AddScoped<IQueryHandler<GetUserById, UserDto>, GetUserByIdHandler>();
 
         return services;
     }
