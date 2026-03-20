@@ -7,6 +7,8 @@ using Itdg.Crm.Api.Application.CommandHandlers;
 using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Queries;
 using Itdg.Crm.Api.Application.QueryHandlers;
+using Itdg.Crm.Api.Domain.GeneralConstants;
+using Itdg.Crm.Api.Infrastructure.Authorization;
 using Itdg.Crm.Api.Infrastructure.Data;
 using Itdg.Crm.Api.Infrastructure.Interceptors;
 using Itdg.Crm.Api.Infrastructure.Data.Interceptors;
@@ -23,11 +25,22 @@ public static class AppExtensions
         // Authentication — Microsoft Entra ID (JWT Bearer)
         services.AddMicrosoftIdentityWebApiAuthentication(configuration, AzureAdOptions.Key);
 
-        // Authorization — require authenticated user by default
+        // Authorization — require authenticated user by default + role-based policies
         services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
-                .Build());
+                .Build())
+            .AddPolicy(AuthorizationPolicyNames.Administrator, policy =>
+                policy.RequireRole(nameof(UserRole.Administrator)))
+            .AddPolicy(AuthorizationPolicyNames.Associate, policy =>
+                policy.RequireRole(nameof(UserRole.Administrator), nameof(UserRole.Associate)))
+            .AddPolicy(AuthorizationPolicyNames.ClientPortal, policy =>
+                policy.RequireRole(nameof(UserRole.ClientPortal)))
+            .AddPolicy(AuthorizationPolicyNames.ClientAssignment, policy =>
+                policy.AddRequirements(new ClientAssignmentRequirement()));
+
+        // Authorization handler
+        services.AddScoped<IAuthorizationHandler, ClientAssignmentAuthorizationHandler>();
 
         // AzureAd options validation
         services.AddOptionsWithValidateOnStart<AzureAdOptions>()
@@ -60,6 +73,7 @@ public static class AppExtensions
         services.AddScoped<IClientRepository, ClientRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IClientAssignmentRepository, ClientAssignmentRepository>();
 
         // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
