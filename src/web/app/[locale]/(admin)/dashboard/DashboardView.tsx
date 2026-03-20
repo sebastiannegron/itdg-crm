@@ -147,7 +147,7 @@ export default function DashboardView({
               <card.icon className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="pl-5">
-              <div className="text-2xl font-bold font-mono">{card.value}</div>
+              <div className="text-2xl font-bold">{card.value}</div>
               <p className="text-xs text-muted-foreground">{card.subtitle}</p>
             </CardContent>
           </Card>
