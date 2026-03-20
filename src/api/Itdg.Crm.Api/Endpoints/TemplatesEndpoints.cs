@@ -43,6 +43,13 @@ public static class TemplatesEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapPost("/{id:guid}/Render", RenderTemplateEndpoint)
+            .RequireAuthorization(policy => policy.RequireRole("Templates.Read", "Templates.ReadWrite"))
+            .WithName("RenderTemplate")
+            .Produces<RenderedTemplateDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesValidationProblem();
+
         return group;
     }
 
@@ -202,6 +209,43 @@ public static class TemplatesEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "retire_template_failed" } });
+        }
+    }
+
+    private static async Task<IResult> RenderTemplateEndpoint(
+        Guid id,
+        RenderTemplateRequest request,
+        HttpContext httpContext,
+        IQueryHandler<RenderTemplate, RenderedTemplateDto> handler,
+        IValidator<RenderTemplateRequest> validator,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return Results.ValidationProblem(validationResult.ToDictionary());
+            }
+
+            var query = new RenderTemplate(id, request.MergeFields);
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "render_template_failed" } });
         }
     }
 }
