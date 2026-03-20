@@ -6,4 +6,5 @@ public interface IClientAssignmentRepository : IGenericRepository<ClientAssignme
 {
     Task<bool> ExistsAsync(Guid userId, Guid clientId, CancellationToken cancellationToken = default);
     Task<ClientAssignment?> GetByClientAndUserAsync(Guid clientId, Guid userId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<ClientAssignment>> GetByClientIdWithUserAsync(Guid clientId, CancellationToken cancellationToken = default);
 }

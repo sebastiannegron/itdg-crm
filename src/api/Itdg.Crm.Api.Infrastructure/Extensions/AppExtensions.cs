@@ -129,6 +129,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetUsers, PaginatedResultDto<UserDto>>, GetUsersHandler>();
         services.AddScoped<IQueryHandler<GetUserById, UserDto>, GetUserByIdHandler>();
         services.AddScoped<IQueryHandler<GetTiers, IEnumerable<ClientTierDto>>, GetTiersHandler>();
+        services.AddScoped<IQueryHandler<GetClientAssignments, IEnumerable<ClientAssignmentDto>>, GetClientAssignmentsHandler>();
 
         return services;
     }

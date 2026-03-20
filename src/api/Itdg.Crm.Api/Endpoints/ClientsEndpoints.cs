@@ -44,6 +44,24 @@ public static class ClientsEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapGet("/{client_id:guid}/Assignments", GetClientAssignmentsEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Administrator)
+            .WithName("GetClientAssignments")
+            .Produces<IEnumerable<ClientAssignmentDto>>(StatusCodes.Status200OK);
+
+        group.MapPost("/{client_id:guid}/Assignments", AssignClientEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Administrator)
+            .WithName("AssignClient")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesValidationProblem();
+
+        group.MapDelete("/{client_id:guid}/Assignments/{user_id:guid}", UnassignClientEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Administrator)
+            .WithName("UnassignClient")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return group;
     }
 
@@ -218,6 +236,95 @@ public static class ClientsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "delete_client_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetClientAssignmentsEndpoint(
+        Guid client_id,
+        HttpContext httpContext,
+        IQueryHandler<GetClientAssignments, IEnumerable<ClientAssignmentDto>> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var result = await handler.HandleAsync(new GetClientAssignments(client_id), Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_client_assignments_failed" } });
+        }
+    }
+
+    private static async Task<IResult> AssignClientEndpoint(
+        Guid client_id,
+        AssignClientRequest request,
+        HttpContext httpContext,
+        ICommandHandler<AssignClient> handler,
+        IValidator<AssignClientRequest> validator,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return Results.ValidationProblem(validationResult.ToDictionary());
+            }
+
+            var command = new AssignClient(client_id, request.UserId);
+            string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
+            await handler.HandleAsync(command, language, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Created();
+        }
+        catch (ConflictException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status409Conflict,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "assign_client_failed" } });
+        }
+    }
+
+    private static async Task<IResult> UnassignClientEndpoint(
+        Guid client_id,
+        Guid user_id,
+        HttpContext httpContext,
+        ICommandHandler<UnassignClient> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var command = new UnassignClient(client_id, user_id);
+            await handler.HandleAsync(command, string.Empty, Guid.Parse(correlationId!), cancellationToken);
+            return Results.NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "unassign_client_failed" } });
         }
     }
 }
