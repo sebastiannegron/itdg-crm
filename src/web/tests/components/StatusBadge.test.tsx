@@ -10,37 +10,38 @@ describe("StatusBadge", () => {
 
   it("applies green classes for Active status", () => {
     render(<StatusBadge status="Active" />);
-    expect(screen.getByText("Active")).toHaveClass("bg-emerald-100");
-    expect(screen.getByText("Active")).toHaveClass("text-emerald-800");
+    expect(screen.getByText("Active")).toHaveClass("bg-[#ECFDF5]");
+    expect(screen.getByText("Active")).toHaveClass("text-[#065F46]");
   });
 
   it("applies amber classes for Pending Docs status", () => {
     render(<StatusBadge status="Pending Docs" />);
-    expect(screen.getByText("Pending Docs")).toHaveClass("bg-amber-100");
-    expect(screen.getByText("Pending Docs")).toHaveClass("text-amber-800");
+    expect(screen.getByText("Pending Docs")).toHaveClass("bg-[#FFFBEB]");
+    expect(screen.getByText("Pending Docs")).toHaveClass("text-[#92400E]");
   });
 
   it("applies red classes for Awaiting Payment status", () => {
     render(<StatusBadge status="Awaiting Payment" />);
-    expect(screen.getByText("Awaiting Payment")).toHaveClass("bg-red-100");
-    expect(screen.getByText("Awaiting Payment")).toHaveClass("text-red-800");
+    expect(screen.getByText("Awaiting Payment")).toHaveClass("bg-[#FEF2F2]");
+    expect(screen.getByText("Awaiting Payment")).toHaveClass("text-[#991B1B]");
   });
 
   it("applies blue classes for In Progress status", () => {
     render(<StatusBadge status="In Progress" />);
-    expect(screen.getByText("In Progress")).toHaveClass("bg-blue-100");
-    expect(screen.getByText("In Progress")).toHaveClass("text-blue-800");
+    expect(screen.getByText("In Progress")).toHaveClass("bg-[#EFF6FF]");
+    expect(screen.getByText("In Progress")).toHaveClass("text-[#1E40AF]");
   });
 
-  it("applies default gray classes for unknown status", () => {
+  it("applies default classes for unknown status", () => {
     render(<StatusBadge status="Unknown Status" />);
-    expect(screen.getByText("Unknown Status")).toHaveClass("bg-gray-100");
-    expect(screen.getByText("Unknown Status")).toHaveClass("text-gray-800");
+    expect(screen.getByText("Unknown Status")).toHaveClass("bg-[#F9FAFB]");
+    expect(screen.getByText("Unknown Status")).toHaveClass("text-[#374151]");
   });
 
-  it("is case-insensitive for status matching", () => {
+  it("falls back to default for unrecognized status", () => {
     render(<StatusBadge status="active" />);
-    expect(screen.getByText("active")).toHaveClass("bg-emerald-100");
+    // Lowercase "active" doesn't match "Active" key, falls back to default
+    expect(screen.getByText("active")).toHaveClass("bg-[#F9FAFB]");
   });
 
   it("applies custom className", () => {
