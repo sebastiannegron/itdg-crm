@@ -189,6 +189,8 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<UploadPortalDocument>, UploadPortalDocumentHandler>();
         services.AddScoped<ICommandHandler<HandleGoogleCallback>, HandleGoogleCallbackHandler>();
         services.AddScoped<ICommandHandler<DisconnectGoogle>, DisconnectGoogleHandler>();
+        services.AddScoped<ICommandHandler<HandleGmailCallback>, HandleGmailCallbackHandler>();
+        services.AddScoped<ICommandHandler<DisconnectGmail>, DisconnectGmailHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -219,6 +221,8 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<DraftEmail, string>, DraftEmailHandler>();
         services.AddScoped<IQueryHandler<GetGoogleAuthUrl, string>, GetGoogleAuthUrlHandler>();
         services.AddScoped<IQueryHandler<GetGoogleConnectionStatus, GoogleConnectionStatusDto>, GetGoogleConnectionStatusHandler>();
+        services.AddScoped<IQueryHandler<GetGmailAuthUrl, string>, GetGmailAuthUrlHandler>();
+        services.AddScoped<IQueryHandler<GetGmailConnectionStatus, GmailConnectionStatusDto>, GetGmailConnectionStatusHandler>();
 
         return services;
     }

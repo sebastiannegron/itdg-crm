@@ -24,6 +24,9 @@ import {
   getGoogleConnectionStatus as getGoogleConnectionStatusService,
   disconnectGoogle as disconnectGoogleService,
   type GoogleConnectionStatusDto,
+  getGmailConnectionStatus as getGmailConnectionStatusService,
+  disconnectGmail as disconnectGmailService,
+  type GmailConnectionStatusDto,
 } from "@/server/Services/integrationService";
 
 const tracer = trace.getTracer("web");
@@ -319,6 +322,67 @@ export async function disconnectGoogleAction(): Promise<ActionResult> {
         return {
           success: true,
           message: "Google Drive disconnected successfully",
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function getGmailConnectionStatusAction(): Promise<
+  ActionResult<GmailConnectionStatusDto>
+> {
+  return tracer.startActiveSpan(
+    "Get Gmail Connection Status",
+    async (span: Span) => {
+      try {
+        const status = await getGmailConnectionStatusService();
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Gmail connection status fetched successfully",
+          data: status,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function disconnectGmailAction(): Promise<ActionResult> {
+  return tracer.startActiveSpan(
+    "Disconnect Gmail",
+    async (span: Span) => {
+      try {
+        await disconnectGmailService();
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Gmail disconnected successfully",
         };
       } catch (err: unknown) {
         const error = err instanceof Error ? err : new Error(String(err));

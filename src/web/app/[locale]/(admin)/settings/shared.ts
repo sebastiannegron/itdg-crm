@@ -4,8 +4,9 @@ import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import type { ClientTierDto } from "@/server/Services/tierService";
 import type { DocumentCategoryDto } from "@/server/Services/documentCategoryService";
 import type { GoogleConnectionStatusDto } from "@/server/Services/integrationService";
+import type { GmailConnectionStatusDto } from "@/server/Services/integrationService";
 
-export type { ClientTierDto, DocumentCategoryDto, GoogleConnectionStatusDto };
+export type { ClientTierDto, DocumentCategoryDto, GoogleConnectionStatusDto, GmailConnectionStatusDto };
 
 function safeText(locale: Locale) {
   const t = fieldnames[locale];
