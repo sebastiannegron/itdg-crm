@@ -29,6 +29,17 @@ vi.mock("@/i18n/routing", () => ({
   ),
 }));
 
+// Mock useNotifications hook
+vi.mock("@/hooks/use-notifications", () => ({
+  useNotifications: () => ({
+    notifications: [],
+    unreadCount: 0,
+    setNotifications: vi.fn(),
+    setUnreadCount: vi.fn(),
+    connectionState: "Disconnected",
+  }),
+}));
+
 import AdminSidebar from "@/app/[locale]/(admin)/AdminSidebar";
 
 describe("AdminSidebar", () => {
