@@ -156,6 +156,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<RestoreDocument>, RestoreDocumentHandler>();
         services.AddScoped<ICommandHandler<UploadNewVersion>, UploadNewVersionHandler>();
         services.AddScoped<ICommandHandler<InviteClient>, InviteClientHandler>();
+        services.AddScoped<ICommandHandler<UploadPortalDocument>, UploadPortalDocumentHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -179,6 +180,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetNotifications, PaginatedResultDto<NotificationDto>>, GetNotificationsHandler>();
         services.AddScoped<IQueryHandler<GetUnreadNotificationCount, int>, GetUnreadNotificationCountHandler>();
         services.AddScoped<IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>>, GetNotificationPreferencesHandler>();
+        services.AddScoped<IQueryHandler<GetPortalDocuments, PaginatedResultDto<DocumentDto>>, GetPortalDocumentsHandler>();
 
         return services;
     }

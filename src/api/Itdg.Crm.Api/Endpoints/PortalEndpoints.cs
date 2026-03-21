@@ -31,6 +31,19 @@ public static class PortalEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapGet("/Documents", GetPortalDocumentsEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.ClientPortal)
+            .WithName("GetPortalDocuments")
+            .Produces<PaginatedResultDto<DocumentDto>>(StatusCodes.Status200OK);
+
+        group.MapPost("/Documents", UploadPortalDocumentEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.ClientPortal)
+            .WithName("UploadPortalDocument")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .DisableAntiforgery();
+
         return group;
     }
 
@@ -131,5 +144,111 @@ public static class PortalEndpoints
         }
         return clientId;
     }
-}
 
+    private static async Task<IResult> GetPortalDocumentsEndpoint(
+        HttpContext httpContext,
+        IQueryHandler<GetPortalDocuments, PaginatedResultDto<DocumentDto>> handler,
+        CancellationToken cancellationToken,
+        int page = 1,
+        int pageSize = 20,
+        Guid? categoryId = null,
+        int? year = null,
+        string? search = null)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var clientId = GetClientIdFromClaims(httpContext);
+            var query = new GetPortalDocuments(clientId, page, pageSize, categoryId, year, search);
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (ForbiddenException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status403Forbidden,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_portal_documents_failed" } });
+        }
+    }
+
+    private static async Task<IResult> UploadPortalDocumentEndpoint(
+        HttpContext httpContext,
+        ICommandHandler<UploadPortalDocument> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var clientId = GetClientIdFromClaims(httpContext);
+
+            var form = await httpContext.Request.ReadFormAsync(cancellationToken);
+            var file = form.Files.GetFile("file");
+
+            if (file is null || file.Length == 0)
+            {
+                return Results.Problem(
+                    detail: "A file is required.",
+                    statusCode: StatusCodes.Status400BadRequest,
+                    extensions: new Dictionary<string, object?> { { "errorCode", "file_required" } });
+            }
+
+            if (!Guid.TryParse(form["category_id"], out var categoryId))
+            {
+                return Results.Problem(
+                    detail: "A valid category_id is required.",
+                    statusCode: StatusCodes.Status400BadRequest,
+                    extensions: new Dictionary<string, object?> { { "errorCode", "invalid_category_id" } });
+            }
+
+            using var stream = file.OpenReadStream();
+            var command = new UploadPortalDocument(
+                ClientId: clientId,
+                CategoryId: categoryId,
+                FileName: file.FileName,
+                ContentStream: stream,
+                ContentType: file.ContentType,
+                FileSize: file.Length
+            );
+
+            string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
+            await handler.HandleAsync(command, language, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Created();
+        }
+        catch (ForbiddenException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status403Forbidden,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (DomainException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "upload_portal_document_failed" } });
+        }
+    }
+}
