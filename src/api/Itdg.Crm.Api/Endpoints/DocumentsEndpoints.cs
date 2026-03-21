@@ -57,6 +57,21 @@ public static class DocumentsEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        documentGroup.MapGet("/{document_id:guid}/Detail", GetDocumentDetailEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetDocumentDetail")
+            .Produces<DocumentDetailDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        documentGroup.MapPost("/{document_id:guid}/Versions", UploadNewVersionEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("UploadNewVersion")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .DisableAntiforgery();
+
         return group;
     }
 
@@ -302,6 +317,97 @@ public static class DocumentsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "restore_document_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetDocumentDetailEndpoint(
+        Guid document_id,
+        HttpContext httpContext,
+        IQueryHandler<GetDocumentDetail, DocumentDetailDto> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var result = await handler.HandleAsync(new GetDocumentDetail(document_id), Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (ForbiddenException)
+        {
+            return Results.Problem(
+                detail: "You do not have permission to access this document.",
+                statusCode: StatusCodes.Status403Forbidden,
+                extensions: new Dictionary<string, object?> { { "errorCode", "forbidden" } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_document_detail_failed" } });
+        }
+    }
+
+    private static async Task<IResult> UploadNewVersionEndpoint(
+        Guid document_id,
+        HttpContext httpContext,
+        ICommandHandler<UploadNewVersion> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var form = await httpContext.Request.ReadFormAsync(cancellationToken);
+            var file = form.Files.GetFile("file");
+
+            if (file is null || file.Length == 0)
+            {
+                return Results.Problem(
+                    detail: "A file is required.",
+                    statusCode: StatusCodes.Status400BadRequest,
+                    extensions: new Dictionary<string, object?> { { "errorCode", "file_required" } });
+            }
+
+            using var stream = file.OpenReadStream();
+            var command = new UploadNewVersion(
+                DocumentId: document_id,
+                FileName: file.FileName,
+                ContentStream: stream,
+                ContentType: file.ContentType,
+                FileSize: file.Length
+            );
+
+            string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
+            await handler.HandleAsync(command, language, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Created();
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (DomainException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "upload_new_version_failed" } });
         }
     }
 }
