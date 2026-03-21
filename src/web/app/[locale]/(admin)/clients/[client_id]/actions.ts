@@ -30,6 +30,11 @@ import {
   type GetClientTimelineParams,
   type PaginatedTimeline,
 } from "@/server/Services/timelineService";
+import {
+  generateDraftEmail as generateDraftEmailService,
+  type DraftEmailParams,
+  type DraftEmailResponse,
+} from "@/server/Services/aiService";
 
 const tracer = trace.getTracer("web");
 
