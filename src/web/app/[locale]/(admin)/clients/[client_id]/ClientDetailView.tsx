@@ -487,6 +487,7 @@ export default function ClientDetailView({
         <ClientEmailsTab
           clientId={client.client_id}
           clientEmail={client.contact_email}
+          clientName={client.name}
         />
       )}
 

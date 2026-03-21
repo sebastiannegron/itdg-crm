@@ -16,6 +16,7 @@ import type { EmailMirrorDto } from "@/server/Services/emailMirrorService";
 import { fetchClientEmailsAction } from "./actions";
 import type { ActionResult } from "./actions";
 import type { PaginatedEmails } from "@/server/Services/emailMirrorService";
+import AiDraftModal from "./AiDraftModal";
 
 const PAGE_SIZE = 20;
 
@@ -75,11 +76,13 @@ function truncateSubject(subject: string, maxLength: number = 40): string {
 interface ClientEmailsTabProps {
   clientId: string;
   clientEmail?: string | null;
+  clientName?: string | null;
 }
 
 export default function ClientEmailsTab({
   clientId,
   clientEmail,
+  clientName,
 }: ClientEmailsTabProps) {
   const locale = useLocale() as Locale;
   const t = fieldnames[locale];
@@ -96,6 +99,7 @@ export default function ClientEmailsTab({
   const [errorMessage, setErrorMessage] = useState("");
   const [isPending, startTransition] = useTransition();
   const [showMobileThread, setShowMobileThread] = useState(false);
+  const [showAiDraft, setShowAiDraft] = useState(false);
 
   const loadEmails = useCallback(
     (page: number, search: string) => {
@@ -209,6 +213,13 @@ export default function ClientEmailsTab({
         </div>
         <Button variant="outline" size="sm" onClick={handleSearch}>
           <Search className="h-4 w-4" />
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => setShowAiDraft(true)}
+          className="bg-[#1a2744] text-white hover:bg-[#1a2744]/90"
+        >
+          {t.ai_draft_button}
         </Button>
       </div>
 
@@ -423,6 +434,19 @@ export default function ClientEmailsTab({
             )}
           </div>
         </div>
+      )}
+
+      {/* AI Draft Modal */}
+      {showAiDraft && (
+        <AiDraftModal
+          clientName={clientName || "Client"}
+          onUseDraft={(draft) => {
+            setShowAiDraft(false);
+            // Draft text is available for the user to copy/use
+            void draft;
+          }}
+          onClose={() => setShowAiDraft(false)}
+        />
       )}
     </div>
   );
