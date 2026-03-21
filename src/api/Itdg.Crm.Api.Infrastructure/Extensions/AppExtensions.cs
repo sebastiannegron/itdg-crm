@@ -102,6 +102,11 @@ public static class AppExtensions
             .Bind(configuration.GetSection(PortalOptions.Key))
             .ValidateDataAnnotations();
 
+        // Azure OpenAI options validation
+        services.AddOptionsWithValidateOnStart<AzureOpenAiOptions>()
+            .Bind(configuration.GetSection(AzureOpenAiOptions.Key))
+            .ValidateDataAnnotations();
+
         // SignalR
         services.AddSignalR();
 
@@ -113,6 +118,7 @@ public static class AppExtensions
         services.AddScoped<IGoogleDriveService, GoogleDriveService>();
         services.AddScoped<IPortalConfiguration, PortalConfiguration>();
         services.AddScoped<IAuditService, AuditService>();
+        services.AddScoped<IAiDraftingService, AzureOpenAiDraftingService>();
 
         // Background services
         services.AddHostedService<GmailSyncBackgroundService>();
