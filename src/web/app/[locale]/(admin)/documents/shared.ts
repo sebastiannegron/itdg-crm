@@ -1,11 +1,13 @@
 import type {
   DocumentDto,
+  DocumentDetailDto,
+  DocumentVersionDto,
   PaginatedDocuments,
 } from "@/server/Services/documentService";
 import type { ClientDto } from "@/server/Services/clientService";
 import type { DocumentCategoryDto } from "@/server/Services/documentCategoryService";
 
-export type { DocumentDto, PaginatedDocuments, ClientDto, DocumentCategoryDto };
+export type { DocumentDto, DocumentDetailDto, DocumentVersionDto, PaginatedDocuments, ClientDto, DocumentCategoryDto };
 
 export interface DocumentsPageData {
   documents: PaginatedDocuments;

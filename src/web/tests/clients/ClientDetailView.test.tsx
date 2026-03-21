@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { ClientDto } from "@/app/[locale]/(admin)/clients/[client_id]/shared";
 
@@ -32,6 +32,22 @@ vi.mock(
     updateClientAction: vi.fn().mockResolvedValue({
       success: true,
       message: "Client updated successfully",
+    }),
+    fetchClientDocumentsAction: vi.fn().mockResolvedValue({
+      success: true,
+      data: { items: [], total_count: 0, page: 1, page_size: 50 },
+    }),
+    fetchDocumentDetailAction: vi.fn().mockResolvedValue({
+      success: true,
+      data: null,
+    }),
+    uploadNewVersionAction: vi.fn().mockResolvedValue({
+      success: true,
+      message: "New version uploaded successfully",
+    }),
+    deleteDocumentAction: vi.fn().mockResolvedValue({
+      success: true,
+      message: "Document deleted successfully",
     }),
   }),
 );
@@ -131,7 +147,7 @@ describe("ClientDetailView", () => {
     expect(screen.getByText("Important client")).toBeInTheDocument();
   });
 
-  it("switches to Documents tab and shows placeholder", () => {
+  it("switches to Documents tab and shows documents section", async () => {
     render(<ClientDetailView client={createClient()} />);
 
     // Find the Documents tab button (not the action button)
@@ -142,9 +158,11 @@ describe("ClientDetailView", () => {
     expect(tabButton).toBeDefined();
     fireEvent.click(tabButton!);
 
-    expect(
-      screen.getByText("Documents will be available here."),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("Search documents\u2026"),
+      ).toBeInTheDocument();
+    });
   });
 
   it("switches to Communications tab and shows placeholder", () => {

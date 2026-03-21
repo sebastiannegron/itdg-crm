@@ -11,6 +11,15 @@ import {
   type UpdateClientParams,
   type ClientAssignmentDto,
 } from "@/server/Services/clientService";
+import {
+  getClientDocuments,
+  getDocumentDetail,
+  uploadNewVersion as uploadNewVersionService,
+  deleteDocument as deleteDocumentService,
+  type GetClientDocumentsParams,
+  type PaginatedDocuments,
+  type DocumentDetailDto,
+} from "@/server/Services/documentService";
 
 const tracer = trace.getTracer("web");
 
@@ -173,4 +182,138 @@ export async function unassignClientAction(
       span.end();
     }
   });
+}
+
+export async function fetchClientDocumentsAction(
+  params: GetClientDocumentsParams,
+): Promise<ActionResult<PaginatedDocuments>> {
+  return tracer.startActiveSpan(
+    "Fetch Client Documents",
+    async (span: Span) => {
+      try {
+        const documents = await getClientDocuments(params);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Documents fetched successfully",
+          data: documents,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function fetchDocumentDetailAction(
+  documentId: string,
+): Promise<ActionResult<DocumentDetailDto>> {
+  return tracer.startActiveSpan(
+    "Fetch Document Detail",
+    async (span: Span) => {
+      try {
+        span.setAttribute("document_id", documentId);
+        const detail = await getDocumentDetail(documentId);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Document detail fetched successfully",
+          data: detail,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function uploadNewVersionAction(
+  documentId: string,
+  formData: FormData,
+): Promise<ActionResult> {
+  return tracer.startActiveSpan(
+    "Upload New Version",
+    async (span: Span) => {
+      try {
+        span.setAttribute("document_id", documentId);
+        const file = formData.get("file") as File | null;
+        if (!file) {
+          return { success: false, message: "A file is required." };
+        }
+        await uploadNewVersionService(documentId, file);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "New version uploaded successfully",
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function deleteDocumentAction(
+  documentId: string,
+): Promise<ActionResult> {
+  return tracer.startActiveSpan(
+    "Delete Document",
+    async (span: Span) => {
+      try {
+        span.setAttribute("document_id", documentId);
+        await deleteDocumentService(documentId);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Document deleted successfully",
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
 }

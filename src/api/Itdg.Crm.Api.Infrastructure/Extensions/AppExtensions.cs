@@ -148,6 +148,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<UploadDocument>, UploadDocumentHandler>();
         services.AddScoped<ICommandHandler<DeleteDocument>, DeleteDocumentHandler>();
         services.AddScoped<ICommandHandler<RestoreDocument>, RestoreDocumentHandler>();
+        services.AddScoped<ICommandHandler<UploadNewVersion>, UploadNewVersionHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -167,6 +168,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetClientDocuments, PaginatedResultDto<DocumentDto>>, GetClientDocumentsHandler>();
         services.AddScoped<IQueryHandler<DownloadDocument, DocumentDownloadDto>, DownloadDocumentHandler>();
         services.AddScoped<IQueryHandler<GetRecycleBin, PaginatedResultDto<RecycleBinDocumentDto>>, GetRecycleBinHandler>();
+        services.AddScoped<IQueryHandler<GetDocumentDetail, DocumentDetailDto>, GetDocumentDetailHandler>();
         services.AddScoped<IQueryHandler<GetNotifications, PaginatedResultDto<NotificationDto>>, GetNotificationsHandler>();
         services.AddScoped<IQueryHandler<GetUnreadNotificationCount, int>, GetUnreadNotificationCountHandler>();
         services.AddScoped<IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>>, GetNotificationPreferencesHandler>();

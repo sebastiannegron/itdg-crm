@@ -101,4 +101,25 @@ public class DocumentRepository : GenericRepository<Document>, IDocumentReposito
             .Where(d => d.DeletedAt != null && d.DeletedAt < cutoffDate)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<(Document? Document, IReadOnlyList<DocumentVersion> Versions)> GetByIdWithVersionsAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        var document = await Context.Set<Document>()
+            .Include(d => d.Category)
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+
+        if (document is null)
+        {
+            return (null, []);
+        }
+
+        var versions = await Context.Set<DocumentVersion>()
+            .Where(v => v.DocumentId == id)
+            .OrderByDescending(v => v.VersionNumber)
+            .ToListAsync(cancellationToken);
+
+        return (document, versions);
+    }
 }

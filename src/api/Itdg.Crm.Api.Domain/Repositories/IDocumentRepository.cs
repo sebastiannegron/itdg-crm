@@ -22,4 +22,7 @@ public interface IDocumentRepository : IGenericRepository<Document>
     Task<IReadOnlyList<Document>> GetDocumentsDeletedBeforeAsync(
         DateTimeOffset cutoffDate,
         CancellationToken cancellationToken = default);
+    Task<(Document? Document, IReadOnlyList<DocumentVersion> Versions)> GetByIdWithVersionsAsync(
+        Guid id,
+        CancellationToken cancellationToken = default);
 }
