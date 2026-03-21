@@ -102,6 +102,9 @@ public static class AppExtensions
             .Bind(configuration.GetSection(PortalOptions.Key))
             .ValidateDataAnnotations();
 
+        // SignalR
+        services.AddSignalR();
+
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
         services.AddScoped<IEmailSender, NoOpEmailSender>();

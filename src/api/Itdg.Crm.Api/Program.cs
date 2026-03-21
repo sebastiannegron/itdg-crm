@@ -1,8 +1,10 @@
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using FluentValidation;
 using Itdg.Crm.Api.Extensions;
+using Itdg.Crm.Api.Hubs;
 using Itdg.Crm.Api.Middlewares;
 using Itdg.Crm.Api.Infrastructure.Extensions;
+using Itdg.Crm.Api.Application.Abstractions;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +18,9 @@ builder.Services.AddSwaggerGen();
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// NotificationHubContext (depends on SignalR registered in AddInfrastructure)
+builder.Services.AddScoped<INotificationHubContext, NotificationHubContext>();
 
 // OpenTelemetry
 if (!string.IsNullOrEmpty(builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]))
@@ -46,6 +51,9 @@ app.UseMiddleware<UserSyncMiddleware>();
 
 // Endpoints
 app.MapAllEndpoints();
+
+// SignalR hubs
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();
 

@@ -1,6 +1,7 @@
 namespace Itdg.Crm.Api.Test.Services;
 
 using Itdg.Crm.Api.Application.Abstractions;
+using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Domain.Entities;
 using Itdg.Crm.Api.Domain.GeneralConstants;
 using Itdg.Crm.Api.Domain.Repositories;
@@ -14,6 +15,7 @@ public class NotificationServiceTests
     private readonly IUserRepository _userRepository;
     private readonly IEmailSender _emailSender;
     private readonly ITenantProvider _tenantProvider;
+    private readonly INotificationHubContext _hubContext;
     private readonly ILogger<NotificationService> _logger;
     private readonly NotificationService _service;
 
@@ -27,6 +29,7 @@ public class NotificationServiceTests
         _userRepository = Substitute.For<IUserRepository>();
         _emailSender = Substitute.For<IEmailSender>();
         _tenantProvider = Substitute.For<ITenantProvider>();
+        _hubContext = Substitute.For<INotificationHubContext>();
         _logger = Substitute.For<ILogger<NotificationService>>();
 
         _tenantProvider.GetTenantId().Returns(_tenantId);
@@ -37,6 +40,7 @@ public class NotificationServiceTests
             _userRepository,
             _emailSender,
             _tenantProvider,
+            _hubContext,
             _logger);
     }
 
@@ -298,5 +302,128 @@ public class NotificationServiceTests
         captured.Body.Should().Be("You have a new portal message");
         captured.Status.Should().Be(NotificationStatus.Delivered);
         captured.DeliveredAt.Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(5));
+    }
+
+    [Fact]
+    public async Task SendAsync_InAppChannel_PushesNotificationViaSignalR()
+    {
+        // Arrange
+        _preferenceRepository.GetByUserIdAndEventTypeAsync(_userId, NotificationEventType.TaskAssigned, Arg.Any<CancellationToken>())
+            .Returns(new List<NotificationPreference>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = _tenantId,
+                    UserId = _userId,
+                    EventType = NotificationEventType.TaskAssigned,
+                    Channel = NotificationChannel.InApp,
+                    IsEnabled = true,
+                    DigestMode = "instant"
+                }
+            });
+
+        _notificationRepository.GetUnreadCountByUserIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns(5);
+
+        // Act
+        await _service.SendAsync(_userId, NotificationEventType.TaskAssigned, "Task Assigned", "You have a new task");
+
+        // Assert
+        await _hubContext.Received(1).SendNotificationAsync(
+            _userId,
+            Arg.Is<NotificationDto>(dto =>
+                dto.Title == "Task Assigned" &&
+                dto.Body == "You have a new task" &&
+                dto.EventType == "TaskAssigned" &&
+                dto.Channel == "InApp"),
+            Arg.Any<CancellationToken>());
+
+        await _hubContext.Received(1).SendUnreadCountAsync(
+            _userId,
+            5,
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SendAsync_InAppDisabled_DoesNotPushViaSignalR()
+    {
+        // Arrange
+        var user = new User
+        {
+            Id = _userId,
+            TenantId = _tenantId,
+            EntraObjectId = "entra-signalr",
+            Email = "user@example.com",
+            DisplayName = "Test User",
+            Role = UserRole.Associate,
+            IsActive = true
+        };
+
+        var preferences = new List<NotificationPreference>
+        {
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = _tenantId,
+                UserId = _userId,
+                EventType = NotificationEventType.DocumentUploaded,
+                Channel = NotificationChannel.InApp,
+                IsEnabled = false,
+                DigestMode = "instant"
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                TenantId = _tenantId,
+                UserId = _userId,
+                EventType = NotificationEventType.DocumentUploaded,
+                Channel = NotificationChannel.Email,
+                IsEnabled = true,
+                DigestMode = "instant"
+            }
+        };
+
+        _preferenceRepository.GetByUserIdAndEventTypeAsync(_userId, NotificationEventType.DocumentUploaded, Arg.Any<CancellationToken>())
+            .Returns(preferences);
+        _userRepository.GetByIdAsync(_userId, Arg.Any<CancellationToken>())
+            .Returns(user);
+
+        // Act
+        await _service.SendAsync(_userId, NotificationEventType.DocumentUploaded, "Document Uploaded", "A new document was uploaded");
+
+        // Assert — no SignalR push since in-app is disabled
+        await _hubContext.DidNotReceive().SendNotificationAsync(Arg.Any<Guid>(), Arg.Any<NotificationDto>(), Arg.Any<CancellationToken>());
+        await _hubContext.DidNotReceive().SendUnreadCountAsync(Arg.Any<Guid>(), Arg.Any<int>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task SendAsync_SignalRFailure_DoesNotThrow()
+    {
+        // Arrange
+        _preferenceRepository.GetByUserIdAndEventTypeAsync(_userId, NotificationEventType.TaskAssigned, Arg.Any<CancellationToken>())
+            .Returns(new List<NotificationPreference>
+            {
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = _tenantId,
+                    UserId = _userId,
+                    EventType = NotificationEventType.TaskAssigned,
+                    Channel = NotificationChannel.InApp,
+                    IsEnabled = true,
+                    DigestMode = "instant"
+                }
+            });
+
+        _hubContext.SendNotificationAsync(Arg.Any<Guid>(), Arg.Any<NotificationDto>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InvalidOperationException("SignalR connection lost")));
+
+        // Act — should not throw even when SignalR fails
+        var act = async () => await _service.SendAsync(_userId, NotificationEventType.TaskAssigned, "Task Assigned", "You have a new task");
+
+        // Assert
+        await act.Should().NotThrowAsync();
+        await _notificationRepository.Received(1).AddAsync(Arg.Any<Notification>(), Arg.Any<CancellationToken>());
     }
 }
