@@ -53,6 +53,10 @@ vi.mock(
       success: true,
       data: { items: [], total_count: 0, page: 1, page_size: 20 },
     }),
+    fetchClientTimelineAction: vi.fn().mockResolvedValue({
+      success: true,
+      data: { items: [], total_count: 0, page: 1, page_size: 10 },
+    }),
   }),
 );
 
