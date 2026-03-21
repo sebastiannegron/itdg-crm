@@ -112,10 +112,12 @@ public class GmailSyncBackgroundService : BackgroundService
         var existingMessageIdSet = new HashSet<string>(existingMessageIds);
 
         var query = $"from:{clientEmail} OR to:{clientEmail}";
+        // Token handling will be provided by the Gmail OAuth connection flow (Task 3.3.1.4).
+        // Until then, the service relies on the IGmailService implementation to handle authentication.
         var messageList = await gmailService.ListMessagesAsync(
             userAccessToken: string.Empty,
             query: query,
-            maxResults: 50,
+            maxResults: _options.MaxMessagesPerSync,
             cancellationToken: cancellationToken);
 
         var newMessages = messageList.Messages

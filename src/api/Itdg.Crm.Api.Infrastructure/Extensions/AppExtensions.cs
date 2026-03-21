@@ -87,8 +87,10 @@ public static class AppExtensions
             .Bind(configuration.GetSection(GoogleDriveOptions.Key))
             .ValidateDataAnnotations();
 
-        // Gmail sync options
-        services.Configure<GmailSyncOptions>(configuration.GetSection(GmailSyncOptions.Key));
+        // Gmail sync options validation
+        services.AddOptionsWithValidateOnStart<GmailSyncOptions>()
+            .Bind(configuration.GetSection(GmailSyncOptions.Key))
+            .ValidateDataAnnotations();
 
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
