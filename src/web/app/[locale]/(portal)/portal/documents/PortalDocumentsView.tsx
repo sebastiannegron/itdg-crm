@@ -181,40 +181,6 @@ export default function PortalDocumentsView({
     setIsDragOver(false);
   }, []);
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(false);
-      const files = e.dataTransfer.files;
-      if (files.length > 0 && uploadCategoryId) {
-        handleUploadFile(files[0]);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [uploadCategoryId],
-  );
-
-  const handleUploadClick = useCallback(() => {
-    if (uploadCategoryId) {
-      fileInputRef.current?.click();
-    }
-  }, [uploadCategoryId]);
-
-  const handleFileInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = e.target.files;
-      if (files && files.length > 0) {
-        handleUploadFile(files[0]);
-      }
-      // Reset input so same file can be re-selected
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [uploadCategoryId],
-  );
-
   const handleUploadFile = useCallback(
     (file: File) => {
       if (!uploadCategoryId) return;
@@ -243,6 +209,38 @@ export default function PortalDocumentsView({
       });
     },
     [uploadCategoryId, t, startTransition, loadDocuments, selectedCategoryId, selectedYear, searchQuery],
+  );
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+      const files = e.dataTransfer.files;
+      if (files.length > 0 && uploadCategoryId) {
+        handleUploadFile(files[0]);
+      }
+    },
+    [uploadCategoryId, handleUploadFile],
+  );
+
+  const handleUploadClick = useCallback(() => {
+    if (uploadCategoryId) {
+      fileInputRef.current?.click();
+    }
+  }, [uploadCategoryId]);
+
+  const handleFileInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        handleUploadFile(files[0]);
+      }
+      // Reset input so same file can be re-selected
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    [handleUploadFile],
   );
 
   // Filtered documents (local search)
