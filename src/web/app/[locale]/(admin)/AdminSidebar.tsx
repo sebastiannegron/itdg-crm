@@ -19,7 +19,6 @@ import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import { Button } from "@/app/_components/ui/button";
 import {
   NotificationPanel,
-  type NotificationItem,
 } from "@/app/_components/NotificationPanel";
 import type { NotificationType } from "@/app/_components/NotificationDot";
 import {
@@ -35,6 +34,7 @@ import {
   getNotificationsAction,
   markAllNotificationsAsReadAction,
 } from "./notification-actions";
+import { useNotifications } from "@/hooks/use-notifications";
 
 interface NavItem {
   href: string;
@@ -184,8 +184,12 @@ export default function AdminSidebar({
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const labels = fieldnames[locale];
+
+  const {
+    notifications,
+    setNotifications,
+  } = useNotifications();
 
   const loadNotifications = useCallback(async () => {
     const result = await getNotificationsAction(1, 10);
@@ -200,7 +204,7 @@ export default function AdminSidebar({
         })),
       );
     }
-  }, []);
+  }, [setNotifications]);
 
   useEffect(() => {
     loadNotifications();

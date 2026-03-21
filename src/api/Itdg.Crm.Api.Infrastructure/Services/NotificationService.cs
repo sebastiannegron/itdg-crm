@@ -1,6 +1,7 @@
 namespace Itdg.Crm.Api.Infrastructure.Services;
 
 using System.Diagnostics;
+using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Diagnostics;
 using Itdg.Crm.Api.Domain.GeneralConstants;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ public class NotificationService : INotificationService
     private readonly IUserRepository _userRepository;
     private readonly IEmailSender _emailSender;
     private readonly ITenantProvider _tenantProvider;
+    private readonly INotificationHubContext _hubContext;
     private readonly ILogger<NotificationService> _logger;
 
     public NotificationService(
@@ -20,6 +22,7 @@ public class NotificationService : INotificationService
         IUserRepository userRepository,
         IEmailSender emailSender,
         ITenantProvider tenantProvider,
+        INotificationHubContext hubContext,
         ILogger<NotificationService> logger)
     {
         _notificationRepository = notificationRepository;
@@ -27,6 +30,7 @@ public class NotificationService : INotificationService
         _userRepository = userRepository;
         _emailSender = emailSender;
         _tenantProvider = tenantProvider;
+        _hubContext = hubContext;
         _logger = logger;
     }
 
@@ -104,6 +108,32 @@ public class NotificationService : INotificationService
         await _notificationRepository.AddAsync(notification, cancellationToken);
 
         _logger.LogInformation("In-app notification {NotificationId} delivered to user {UserId}", notification.Id, userId);
+
+        // Push real-time notification via SignalR
+        try
+        {
+            var dto = new NotificationDto(
+                NotificationId: notification.Id,
+                UserId: notification.UserId,
+                EventType: notification.EventType.ToString(),
+                Channel: notification.Channel.ToString(),
+                Title: notification.Title,
+                Body: notification.Body,
+                Status: notification.Status.ToString(),
+                DeliveredAt: notification.DeliveredAt,
+                ReadAt: notification.ReadAt,
+                CreatedAt: notification.CreatedAt
+            );
+
+            await _hubContext.SendNotificationAsync(userId, dto, cancellationToken);
+
+            var unreadCount = await _notificationRepository.GetUnreadCountByUserIdAsync(userId, cancellationToken);
+            await _hubContext.SendUnreadCountAsync(userId, unreadCount, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to push real-time notification {NotificationId} to user {UserId}", notification.Id, userId);
+        }
     }
 
     private async Task SendEmailAsync(Guid userId, string title, string body, CancellationToken cancellationToken)
