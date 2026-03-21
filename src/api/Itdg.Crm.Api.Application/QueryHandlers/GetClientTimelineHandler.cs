@@ -70,9 +70,15 @@ public class GetClientTimelineHandler : IQueryHandler<GetClientTimeline, Paginat
             }
         }
 
-        var documents = await _documentRepository.GetByClientIdAsync(query.ClientId, cancellationToken);
-        var messages = await _messageRepository.GetByClientIdAsync(query.ClientId, cancellationToken);
-        var emails = await _emailMirrorRepository.GetByClientIdAsync(query.ClientId, cancellationToken);
+        var documentsTask = _documentRepository.GetByClientIdAsync(query.ClientId, cancellationToken);
+        var messagesTask = _messageRepository.GetByClientIdAsync(query.ClientId, cancellationToken);
+        var emailsTask = _emailMirrorRepository.GetByClientIdAsync(query.ClientId, cancellationToken);
+
+        await Task.WhenAll(documentsTask, messagesTask, emailsTask);
+
+        var documents = await documentsTask;
+        var messages = await messagesTask;
+        var emails = await emailsTask;
 
         var timelineItems = new List<TimelineItemDto>();
 
@@ -109,12 +115,9 @@ public class GetClientTimelineHandler : IQueryHandler<GetClientTimeline, Paginat
             ));
         }
 
-        var sorted = timelineItems
+        var totalCount = timelineItems.Count;
+        var paged = timelineItems
             .OrderByDescending(t => t.Timestamp)
-            .ToList();
-
-        var totalCount = sorted.Count;
-        var paged = sorted
             .Skip((query.Page - 1) * query.PageSize)
             .Take(query.PageSize)
             .ToList();
