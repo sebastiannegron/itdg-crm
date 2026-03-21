@@ -364,6 +364,25 @@ export const fieldnames = {
     ai_draft_error: "Failed to generate draft. Please try again.",
     ai_draft_topic_required: "Topic is required.",
     ai_draft_invalid_input: "Input contains invalid characters.",
+    settings_google_title: "Google Drive Integration",
+    settings_google_description:
+      "Connect your Google Drive account to enable document storage and management.",
+    settings_google_connect: "Connect Google Drive",
+    settings_google_connecting: "Connecting…",
+    settings_google_connected: "Connected",
+    settings_google_connected_at: "Connected on",
+    settings_google_disconnect: "Disconnect",
+    settings_google_disconnecting: "Disconnecting…",
+    settings_google_disconnect_confirm:
+      "Are you sure you want to disconnect Google Drive? This will revoke access to Drive features.",
+    settings_google_connect_success: "Google Drive connected successfully.",
+    settings_google_connect_error:
+      "Failed to connect Google Drive. Please try again.",
+    settings_google_disconnect_success:
+      "Google Drive disconnected successfully.",
+    settings_google_disconnect_error:
+      "Failed to disconnect Google Drive. Please try again.",
+    settings_google_not_connected: "Not connected",
   },
   "es-pr": {
     app_name: "R&A Plataforma CRM",
@@ -730,6 +749,26 @@ export const fieldnames = {
     ai_draft_error: "Error al generar el borrador. Inténtelo de nuevo.",
     ai_draft_topic_required: "El tema es requerido.",
     ai_draft_invalid_input: "La entrada contiene caracteres inválidos.",
+    settings_google_title: "Integración con Google Drive",
+    settings_google_description:
+      "Conecte su cuenta de Google Drive para habilitar el almacenamiento y gestión de documentos.",
+    settings_google_connect: "Conectar Google Drive",
+    settings_google_connecting: "Conectando…",
+    settings_google_connected: "Conectado",
+    settings_google_connected_at: "Conectado el",
+    settings_google_disconnect: "Desconectar",
+    settings_google_disconnecting: "Desconectando…",
+    settings_google_disconnect_confirm:
+      "¿Está seguro de que desea desconectar Google Drive? Esto revocará el acceso a las funciones de Drive.",
+    settings_google_connect_success:
+      "Google Drive conectado exitosamente.",
+    settings_google_connect_error:
+      "Error al conectar Google Drive. Inténtelo de nuevo.",
+    settings_google_disconnect_success:
+      "Google Drive desconectado exitosamente.",
+    settings_google_disconnect_error:
+      "Error al desconectar Google Drive. Inténtelo de nuevo.",
+    settings_google_not_connected: "No conectado",
   },
 } as const;
 
