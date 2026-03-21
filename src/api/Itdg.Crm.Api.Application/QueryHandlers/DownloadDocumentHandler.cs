@@ -16,6 +16,7 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
     private readonly IClientAssignmentRepository _clientAssignmentRepository;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly IAuditService _auditService;
     private readonly ILogger<DownloadDocumentHandler> _logger;
 
     public DownloadDocumentHandler(
@@ -24,6 +25,7 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
         IClientAssignmentRepository clientAssignmentRepository,
         IGoogleDriveTokenProvider tokenProvider,
         ICurrentUserProvider currentUserProvider,
+        IAuditService auditService,
         ILogger<DownloadDocumentHandler> logger)
     {
         _documentRepository = documentRepository;
@@ -31,6 +33,7 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
         _clientAssignmentRepository = clientAssignmentRepository;
         _tokenProvider = tokenProvider;
         _currentUserProvider = currentUserProvider;
+        _auditService = auditService;
         _logger = logger;
     }
 
@@ -78,6 +81,8 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
         {
             throw new DomainException("Google Drive access token is not available.", "google_drive_token_unavailable");
         }
+
+        await _auditService.LogAccessAsync(nameof(Document), document.Id, "Download", cancellationToken);
 
         string webViewLink = $"https://drive.google.com/file/d/{document.GoogleDriveFileId}/view";
 

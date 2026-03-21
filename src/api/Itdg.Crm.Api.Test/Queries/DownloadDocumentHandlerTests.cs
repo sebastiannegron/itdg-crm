@@ -16,6 +16,7 @@ public class DownloadDocumentHandlerTests
     private readonly IClientAssignmentRepository _clientAssignmentRepository;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly IAuditService _auditService;
     private readonly ILogger<DownloadDocumentHandler> _logger;
     private readonly DownloadDocumentHandler _handler;
     private readonly Guid _documentId = Guid.NewGuid();
@@ -29,11 +30,12 @@ public class DownloadDocumentHandlerTests
         _clientAssignmentRepository = Substitute.For<IClientAssignmentRepository>();
         _tokenProvider = Substitute.For<IGoogleDriveTokenProvider>();
         _currentUserProvider = Substitute.For<ICurrentUserProvider>();
+        _auditService = Substitute.For<IAuditService>();
         _logger = Substitute.For<ILogger<DownloadDocumentHandler>>();
 
         _handler = new DownloadDocumentHandler(
             _documentRepository, _userRepository, _clientAssignmentRepository,
-            _tokenProvider, _currentUserProvider, _logger);
+            _tokenProvider, _currentUserProvider, _auditService, _logger);
 
         // Default: Administrator
         _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(true);

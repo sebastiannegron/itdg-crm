@@ -17,6 +17,7 @@ public class GetDocumentDetailHandlerTests
     private readonly IClientAssignmentRepository _clientAssignmentRepository;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly IAuditService _auditService;
     private readonly ILogger<GetDocumentDetailHandler> _logger;
     private readonly GetDocumentDetailHandler _handler;
     private readonly Guid _documentId = Guid.NewGuid();
@@ -31,11 +32,12 @@ public class GetDocumentDetailHandlerTests
         _clientAssignmentRepository = Substitute.For<IClientAssignmentRepository>();
         _tokenProvider = Substitute.For<IGoogleDriveTokenProvider>();
         _currentUserProvider = Substitute.For<ICurrentUserProvider>();
+        _auditService = Substitute.For<IAuditService>();
         _logger = Substitute.For<ILogger<GetDocumentDetailHandler>>();
 
         _handler = new GetDocumentDetailHandler(
             _documentRepository, _userRepository, _clientAssignmentRepository,
-            _tokenProvider, _currentUserProvider, _logger);
+            _tokenProvider, _currentUserProvider, _auditService, _logger);
 
         // Default: Administrator
         _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(true);

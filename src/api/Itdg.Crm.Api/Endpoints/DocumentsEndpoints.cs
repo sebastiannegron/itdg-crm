@@ -72,6 +72,12 @@ public static class DocumentsEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .DisableAntiforgery();
 
+        documentGroup.MapGet("/{document_id:guid}/Audit", GetDocumentAuditTrailEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Administrator)
+            .WithName("GetDocumentAuditTrail")
+            .Produces<PaginatedResultDto<AuditLogDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         return group;
     }
 
@@ -408,6 +414,37 @@ public static class DocumentsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "upload_new_version_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetDocumentAuditTrailEndpoint(
+        Guid document_id,
+        HttpContext httpContext,
+        IQueryHandler<GetDocumentAuditTrail, PaginatedResultDto<AuditLogDto>> handler,
+        CancellationToken cancellationToken,
+        int page = 1,
+        int pageSize = 20)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var query = new GetDocumentAuditTrail(document_id, page, pageSize);
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_document_audit_trail_failed" } });
         }
     }
 }
