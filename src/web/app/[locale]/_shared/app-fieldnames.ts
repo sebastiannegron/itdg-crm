@@ -383,6 +383,24 @@ export const fieldnames = {
     settings_google_disconnect_error:
       "Failed to disconnect Google Drive. Please try again.",
     settings_google_not_connected: "Not connected",
+    settings_gmail_title: "Gmail Integration",
+    settings_gmail_description:
+      "Connect your Gmail account to view email exchanges with clients.",
+    settings_gmail_connect: "Connect Gmail",
+    settings_gmail_connecting: "Connecting…",
+    settings_gmail_connected: "Connected",
+    settings_gmail_connected_at: "Connected on",
+    settings_gmail_disconnect: "Disconnect",
+    settings_gmail_disconnecting: "Disconnecting…",
+    settings_gmail_disconnect_confirm:
+      "Are you sure you want to disconnect Gmail? This will revoke access to email features.",
+    settings_gmail_connect_success: "Gmail connected successfully.",
+    settings_gmail_connect_error:
+      "Failed to connect Gmail. Please try again.",
+    settings_gmail_disconnect_success: "Gmail disconnected successfully.",
+    settings_gmail_disconnect_error:
+      "Failed to disconnect Gmail. Please try again.",
+    settings_gmail_not_connected: "Not connected",
   },
   "es-pr": {
     app_name: "R&A Plataforma CRM",
@@ -769,6 +787,25 @@ export const fieldnames = {
     settings_google_disconnect_error:
       "Error al desconectar Google Drive. Inténtelo de nuevo.",
     settings_google_not_connected: "No conectado",
+    settings_gmail_title: "Integración con Gmail",
+    settings_gmail_description:
+      "Conecte su cuenta de Gmail para ver los intercambios de correo con clientes.",
+    settings_gmail_connect: "Conectar Gmail",
+    settings_gmail_connecting: "Conectando…",
+    settings_gmail_connected: "Conectado",
+    settings_gmail_connected_at: "Conectado el",
+    settings_gmail_disconnect: "Desconectar",
+    settings_gmail_disconnecting: "Desconectando…",
+    settings_gmail_disconnect_confirm:
+      "¿Está seguro de que desea desconectar Gmail? Esto revocará el acceso a las funciones de correo.",
+    settings_gmail_connect_success: "Gmail conectado exitosamente.",
+    settings_gmail_connect_error:
+      "Error al conectar Gmail. Inténtelo de nuevo.",
+    settings_gmail_disconnect_success:
+      "Gmail desconectado exitosamente.",
+    settings_gmail_disconnect_error:
+      "Error al desconectar Gmail. Inténtelo de nuevo.",
+    settings_gmail_not_connected: "No conectado",
   },
 } as const;
 

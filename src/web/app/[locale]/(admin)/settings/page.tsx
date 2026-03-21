@@ -6,6 +6,8 @@ import {
 import {
   getGoogleConnectionStatus,
   type GoogleConnectionStatusDto,
+  getGmailConnectionStatus,
+  type GmailConnectionStatusDto,
 } from "@/server/Services/integrationService";
 import SettingsView from "./SettingsView";
 
@@ -13,6 +15,7 @@ export default async function SettingsPage() {
   let tiers: ClientTierDto[];
   let categories: DocumentCategoryDto[];
   let googleStatus: GoogleConnectionStatusDto;
+  let gmailStatus: GmailConnectionStatusDto;
 
   try {
     tiers = await getTiers();
@@ -38,11 +41,22 @@ export default async function SettingsPage() {
     googleStatus = { is_connected: false, connected_at: null };
   }
 
+  try {
+    gmailStatus = await getGmailConnectionStatus();
+  } catch (error) {
+    console.error(
+      "[SettingsPage] Failed to fetch Gmail connection status:",
+      error,
+    );
+    gmailStatus = { is_connected: false, connected_at: null };
+  }
+
   return (
     <SettingsView
       initialTiers={tiers}
       initialCategories={categories}
       initialGoogleStatus={googleStatus}
+      initialGmailStatus={gmailStatus}
     />
   );
 }

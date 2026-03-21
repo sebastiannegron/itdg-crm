@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PageHeader } from "@/app/_components/PageHeader";
 import { Button } from "@/app/_components/ui/button";
 import { Input } from "@/app/_components/ui/input";
-import { Plus, Pencil, X, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Pencil, X, Trash2, ArrowUp, ArrowDown, Mail } from "lucide-react";
 import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import type { PageStatus } from "@/app/[locale]/_shared/app-enums";
 import {
@@ -17,6 +17,7 @@ import {
   type DocumentCategoryDto,
   type DocumentCategoryFormData,
   DocumentCategorySchema,
+  type GmailConnectionStatusDto,
 } from "./shared";
 import {
   createTierAction,
@@ -27,16 +28,22 @@ import {
   updateDocumentCategoryAction,
   deleteDocumentCategoryAction,
   reorderDocumentCategoriesAction,
+  getGmailConnectionStatusAction,
+  disconnectGmailAction,
 } from "./actions";
+import { getGmailAuthUrl } from "@/server/Services/integrationService";
 
 interface SettingsViewProps {
   initialTiers: ClientTierDto[];
   initialCategories: DocumentCategoryDto[];
+  initialGoogleStatus?: { is_connected: boolean; connected_at: string | null };
+  initialGmailStatus?: GmailConnectionStatusDto;
 }
 
 export default function SettingsView({
   initialTiers,
   initialCategories,
+  initialGmailStatus,
 }: SettingsViewProps) {
   const locale = useLocale() as Locale;
   const t = fieldnames[locale];
@@ -54,6 +61,10 @@ export default function SettingsView({
   );
   const [showCreateCategoryForm, setShowCreateCategoryForm] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [gmailStatus, setGmailStatus] = useState<GmailConnectionStatusDto>(
+    initialGmailStatus ?? { is_connected: false, connected_at: null },
+  );
+  const [gmailLoading, setGmailLoading] = useState(false);
 
   const createForm = useForm<TierFormData>({
     resolver: zodResolver(TierSchema(locale)),
