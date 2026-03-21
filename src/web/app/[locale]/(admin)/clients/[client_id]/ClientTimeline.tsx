@@ -90,7 +90,7 @@ export default function ClientTimeline({ clientId }: ClientTimelineProps) {
         setIsInitialLoad(false);
       });
     },
-    [clientId, t, startTransition],
+    [clientId, t],
   );
 
   useEffect(() => {
@@ -157,7 +157,7 @@ export default function ClientTimeline({ clientId }: ClientTimelineProps) {
                   </div>
                   <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
                     {item.actor && (
-                      <span className="truncate max-w-[150px]">
+                      <span className="max-w-[150px] truncate">
                         {item.actor}
                       </span>
                     )}
