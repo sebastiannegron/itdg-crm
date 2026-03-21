@@ -264,13 +264,31 @@ export default function DocumentsView({
     );
   }, [documents, searchQuery]);
 
-  // View document
+  // View document (open in browser)
   const handleViewDocument = useCallback(
     (documentId: string) => {
       startTransition(async () => {
         const result = await fetchDocumentDownload(documentId);
         if (result.success && result.data?.web_view_link) {
           window.open(result.data.web_view_link, "_blank", "noopener,noreferrer");
+        }
+      });
+    },
+    [startTransition],
+  );
+
+  // Download document (same link, signals download intent)
+  const handleDownloadDocument = useCallback(
+    (documentId: string) => {
+      startTransition(async () => {
+        const result = await fetchDocumentDownload(documentId);
+        if (result.success && result.data?.web_view_link) {
+          // Google Drive export link triggers download
+          const downloadLink = result.data.web_view_link.replace(
+            /\/view(\?|$)/,
+            "/export$1",
+          );
+          window.open(downloadLink, "_blank", "noopener,noreferrer");
         }
       });
     },
@@ -291,9 +309,13 @@ export default function DocumentsView({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-    // File upload handled by parent form — drop zone is visual indication
-    // Actual upload requires backend multipart POST, which needs the upload endpoint
-    // For now, the drop zone provides the UI affordance
+    // Upload requires multipart POST to /api/v1/Clients/{client_id}/Documents
+    // with category_id. Full upload integration depends on category selection
+    // and the backend upload endpoint (issue #41).
+    const files = e.dataTransfer.files;
+    if (files.length > 0 && fileInputRef.current) {
+      fileInputRef.current.files = files;
+    }
   }, []);
 
   const handleUploadClick = useCallback(() => {
@@ -447,10 +469,10 @@ export default function DocumentsView({
                         {formatFileSize(doc.file_size)}
                       </td>
                       <td className="py-2.5 pr-3 text-muted-foreground">
-                        {formatDate(doc.created_at)}
+                        {formatDate(doc.created_at, locale)}
                       </td>
-                      <td className="py-2.5 pr-3 text-muted-foreground">
-                        {doc.uploaded_by_id.substring(0, 8)}
+                      <td className="py-2.5 pr-3 text-muted-foreground font-mono text-xs">
+                        {doc.uploaded_by_id.substring(0, 8)}…
                       </td>
                       <td className="py-2.5 pr-3">
                         <Badge
@@ -475,7 +497,7 @@ export default function DocumentsView({
                             variant="ghost"
                             size="sm"
                             className="h-7 w-7 p-0"
-                            onClick={() => handleViewDocument(doc.document_id)}
+                            onClick={() => handleDownloadDocument(doc.document_id)}
                             title={t.documents_download}
                           >
                             <Download className="h-3.5 w-3.5" />
@@ -502,7 +524,7 @@ export default function DocumentsView({
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {formatFileSize(doc.file_size)} ·{" "}
-                            {formatDate(doc.created_at)}
+                            {formatDate(doc.created_at, locale)}
                           </p>
                         </div>
                       </div>
@@ -527,7 +549,7 @@ export default function DocumentsView({
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs flex-1"
-                        onClick={() => handleViewDocument(doc.document_id)}
+                        onClick={() => handleDownloadDocument(doc.document_id)}
                       >
                         <Download className="mr-1 h-3 w-3" />
                         {t.documents_download}

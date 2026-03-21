@@ -38,9 +38,10 @@ export function formatFileSize(bytes: number): string {
   return `${size.toFixed(i === 0 ? 0 : 1)} ${units[i]}`;
 }
 
-export function formatDate(isoDate: string): string {
+export function formatDate(isoDate: string, locale: string = "en-US"): string {
+  const dateLocale = locale === "es-pr" ? "es-PR" : "en-US";
   const date = new Date(isoDate);
-  return date.toLocaleDateString("en-US", {
+  return date.toLocaleDateString(dateLocale, {
     month: "short",
     day: "numeric",
     year: "numeric",
