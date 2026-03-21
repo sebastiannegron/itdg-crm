@@ -20,6 +20,11 @@ import {
   type UpdateDocumentCategoryParams,
   type ReorderDocumentCategoriesParams,
 } from "@/server/Services/documentCategoryService";
+import {
+  getGoogleConnectionStatus as getGoogleConnectionStatusService,
+  disconnectGoogle as disconnectGoogleService,
+  type GoogleConnectionStatusDto,
+} from "@/server/Services/integrationService";
 
 const tracer = trace.getTracer("web");
 
@@ -253,6 +258,67 @@ export async function reorderDocumentCategoriesAction(
         return {
           success: true,
           message: "Categories reordered successfully",
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function getGoogleConnectionStatusAction(): Promise<
+  ActionResult<GoogleConnectionStatusDto>
+> {
+  return tracer.startActiveSpan(
+    "Get Google Connection Status",
+    async (span: Span) => {
+      try {
+        const status = await getGoogleConnectionStatusService();
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Google connection status fetched successfully",
+          data: status,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function disconnectGoogleAction(): Promise<ActionResult> {
+  return tracer.startActiveSpan(
+    "Disconnect Google",
+    async (span: Span) => {
+      try {
+        await disconnectGoogleService();
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Google Drive disconnected successfully",
         };
       } catch (err: unknown) {
         const error = err instanceof Error ? err : new Error(String(err));

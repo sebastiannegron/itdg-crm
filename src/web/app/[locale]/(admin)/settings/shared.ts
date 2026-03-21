@@ -3,8 +3,9 @@ import { codeRegex, urlRegex } from "@/app/[locale]/_shared/app-enums";
 import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import type { ClientTierDto } from "@/server/Services/tierService";
 import type { DocumentCategoryDto } from "@/server/Services/documentCategoryService";
+import type { GoogleConnectionStatusDto } from "@/server/Services/integrationService";
 
-export type { ClientTierDto, DocumentCategoryDto };
+export type { ClientTierDto, DocumentCategoryDto, GoogleConnectionStatusDto };
 
 function safeText(locale: Locale) {
   const t = fieldnames[locale];

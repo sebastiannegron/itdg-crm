@@ -75,7 +75,7 @@ public static class AppExtensions
         services.AddScoped<ICurrentUserProvider, TenantProvider.ClaimsCurrentUserProvider>();
 
         // Google Drive token provider
-        services.AddScoped<IGoogleDriveTokenProvider, TenantProvider.ClaimsGoogleDriveTokenProvider>();
+        services.AddScoped<IGoogleDriveTokenProvider, TenantProvider.DatabaseGoogleDriveTokenProvider>();
 
         // Gmail options validation
         services.AddOptionsWithValidateOnStart<GmailOptions>()
@@ -112,6 +112,16 @@ public static class AppExtensions
             .Bind(configuration.GetSection(MicrosoftGraphEmailOptions.Key))
             .ValidateDataAnnotations();
 
+        // Google OAuth options validation
+        services.AddOptionsWithValidateOnStart<GoogleOAuthOptions>()
+            .Bind(configuration.GetSection(GoogleOAuthOptions.Key))
+            .ValidateDataAnnotations();
+
+        // Token encryption options validation
+        services.AddOptionsWithValidateOnStart<TokenEncryptionOptions>()
+            .Bind(configuration.GetSection(TokenEncryptionOptions.Key))
+            .ValidateDataAnnotations();
+
         // SignalR
         services.AddSignalR();
 
@@ -124,6 +134,8 @@ public static class AppExtensions
         services.AddScoped<IPortalConfiguration, PortalConfiguration>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAiDraftingService, AzureOpenAiDraftingService>();
+        services.AddSingleton<ITokenEncryptionService, AesTokenEncryptionService>();
+        services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
 
         // Background services
         services.AddHostedService<GmailSyncBackgroundService>();
@@ -143,6 +155,7 @@ public static class AppExtensions
         services.AddScoped<IDashboardLayoutRepository, DashboardLayoutRepository>();
         services.AddScoped<IEmailMirrorRepository, EmailMirrorRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
+        services.AddScoped<IUserIntegrationTokenRepository, UserIntegrationTokenRepository>();
 
         // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
@@ -174,6 +187,8 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<UploadNewVersion>, UploadNewVersionHandler>();
         services.AddScoped<ICommandHandler<InviteClient>, InviteClientHandler>();
         services.AddScoped<ICommandHandler<UploadPortalDocument>, UploadPortalDocumentHandler>();
+        services.AddScoped<ICommandHandler<HandleGoogleCallback>, HandleGoogleCallbackHandler>();
+        services.AddScoped<ICommandHandler<DisconnectGoogle>, DisconnectGoogleHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -202,6 +217,8 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetClientEmails, PaginatedResultDto<EmailMirrorDto>>, GetClientEmailsHandler>();
         services.AddScoped<IQueryHandler<GetDocumentAuditTrail, PaginatedResultDto<AuditLogDto>>, GetDocumentAuditTrailHandler>();
         services.AddScoped<IQueryHandler<DraftEmail, string>, DraftEmailHandler>();
+        services.AddScoped<IQueryHandler<GetGoogleAuthUrl, string>, GetGoogleAuthUrlHandler>();
+        services.AddScoped<IQueryHandler<GetGoogleConnectionStatus, GoogleConnectionStatusDto>, GetGoogleConnectionStatusHandler>();
 
         return services;
     }
