@@ -442,8 +442,9 @@ export default function ClientEmailsTab({
           clientName={clientName || "Client"}
           onUseDraft={(draft) => {
             setShowAiDraft(false);
-            // Draft text is available for the user to copy/use
-            void draft;
+            navigator.clipboard.writeText(draft).catch(() => {
+              // Clipboard API may not be available in all environments
+            });
           }}
           onClose={() => setShowAiDraft(false)}
         />
