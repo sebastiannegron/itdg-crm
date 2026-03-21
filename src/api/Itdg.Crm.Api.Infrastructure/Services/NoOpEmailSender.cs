@@ -16,4 +16,10 @@ public class NoOpEmailSender : IEmailSender
         _logger.LogInformation("Email sending not configured. Would send to {ToEmail} with subject '{Subject}'", toEmail, subject);
         return Task.CompletedTask;
     }
+
+    public Task SendHtmlAsync(string toEmail, string subject, string htmlBody, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Email sending not configured. Would send HTML email to {ToEmail} with subject '{Subject}'", toEmail, subject);
+        return Task.CompletedTask;
+    }
 }

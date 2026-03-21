@@ -107,12 +107,17 @@ public static class AppExtensions
             .Bind(configuration.GetSection(AzureOpenAiOptions.Key))
             .ValidateDataAnnotations();
 
+        // Microsoft Graph email options validation
+        services.AddOptionsWithValidateOnStart<MicrosoftGraphEmailOptions>()
+            .Bind(configuration.GetSection(MicrosoftGraphEmailOptions.Key))
+            .ValidateDataAnnotations();
+
         // SignalR
         services.AddSignalR();
 
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
-        services.AddScoped<IEmailSender, NoOpEmailSender>();
+        services.AddScoped<IEmailSender, MicrosoftGraphEmailSender>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IGmailService, GmailService>();
         services.AddScoped<IGoogleDriveService, GoogleDriveService>();
