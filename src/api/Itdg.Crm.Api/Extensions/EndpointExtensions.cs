@@ -18,6 +18,7 @@ public static class EndpointExtensions
         app.MapDocumentsEndpoints();
         app.MapNotificationsEndpoints();
         app.MapAiEndpoints();
+        app.MapIntegrationsEndpoints();
         return app;
     }
 }
