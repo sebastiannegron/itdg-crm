@@ -62,6 +62,13 @@ public static class ClientsEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapPost("/{client_id:guid}/Invite", InviteClientEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Administrator)
+            .WithName("InviteClient")
+            .Produces(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesValidationProblem();
+
         return group;
     }
 
@@ -325,6 +332,44 @@ public static class ClientsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "unassign_client_failed" } });
+        }
+    }
+
+    private static async Task<IResult> InviteClientEndpoint(
+        Guid client_id,
+        InviteClientRequest request,
+        HttpContext httpContext,
+        ICommandHandler<InviteClient> handler,
+        IValidator<InviteClientRequest> validator,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return Results.ValidationProblem(validationResult.ToDictionary());
+            }
+
+            var command = new InviteClient(client_id, request.Email);
+            string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
+            await handler.HandleAsync(command, language, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Created();
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "invite_client_failed" } });
         }
     }
 }

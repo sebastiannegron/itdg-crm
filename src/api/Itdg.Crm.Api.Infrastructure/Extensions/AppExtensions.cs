@@ -97,12 +97,18 @@ public static class AppExtensions
             .Bind(configuration.GetSection(DocumentPurgeOptions.Key))
             .ValidateDataAnnotations();
 
+        // Portal options validation
+        services.AddOptionsWithValidateOnStart<PortalOptions>()
+            .Bind(configuration.GetSection(PortalOptions.Key))
+            .ValidateDataAnnotations();
+
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
         services.AddScoped<IEmailSender, NoOpEmailSender>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IGmailService, GmailService>();
         services.AddScoped<IGoogleDriveService, GoogleDriveService>();
+        services.AddScoped<IPortalConfiguration, PortalConfiguration>();
 
         // Background services
         services.AddHostedService<GmailSyncBackgroundService>();
@@ -149,6 +155,7 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<DeleteDocument>, DeleteDocumentHandler>();
         services.AddScoped<ICommandHandler<RestoreDocument>, RestoreDocumentHandler>();
         services.AddScoped<ICommandHandler<UploadNewVersion>, UploadNewVersionHandler>();
+        services.AddScoped<ICommandHandler<InviteClient>, InviteClientHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
