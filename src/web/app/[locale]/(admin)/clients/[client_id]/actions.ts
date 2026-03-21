@@ -25,6 +25,11 @@ import {
   type GetClientEmailsParams,
   type PaginatedEmails,
 } from "@/server/Services/emailMirrorService";
+import {
+  getClientTimeline,
+  type GetClientTimelineParams,
+  type PaginatedTimeline,
+} from "@/server/Services/timelineService";
 
 const tracer = trace.getTracer("web");
 
@@ -336,6 +341,39 @@ export async function fetchClientEmailsAction(
           success: true,
           message: "Emails fetched successfully",
           data: emails,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function fetchClientTimelineAction(
+  params: GetClientTimelineParams,
+): Promise<ActionResult<PaginatedTimeline>> {
+  return tracer.startActiveSpan(
+    "Fetch Client Timeline",
+    async (span: Span) => {
+      try {
+        span.setAttribute("client_id", params.clientId);
+        const timeline = await getClientTimeline(params);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Timeline fetched successfully",
+          data: timeline,
         };
       } catch (err: unknown) {
         const error = err instanceof Error ? err : new Error(String(err));

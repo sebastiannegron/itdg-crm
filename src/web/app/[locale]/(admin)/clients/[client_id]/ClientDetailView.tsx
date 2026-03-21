@@ -40,6 +40,7 @@ import ClientAssignmentsPanel, {
 } from "./ClientAssignmentsPanel";
 import ClientDocumentsTab from "./ClientDocumentsTab";
 import ClientEmailsTab from "./ClientEmailsTab";
+import ClientTimeline from "./ClientTimeline";
 
 function parseTierNumber(tierName: string | null): 1 | 2 | 3 | null {
   if (!tierName) return null;
@@ -472,6 +473,10 @@ export default function ClientDetailView({
           initialAssignments={assignments}
           users={users}
         />
+      )}
+
+      {activeTab === "overview" && !isEditing && client && (
+        <ClientTimeline clientId={client.client_id} />
       )}
 
       {activeTab === "documents" && client && (
