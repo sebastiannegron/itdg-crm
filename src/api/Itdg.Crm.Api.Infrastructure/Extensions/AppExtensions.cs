@@ -183,6 +183,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>>, GetNotificationPreferencesHandler>();
         services.AddScoped<IQueryHandler<GetPortalDocuments, PaginatedResultDto<DocumentDto>>, GetPortalDocumentsHandler>();
         services.AddScoped<IQueryHandler<GetClientTimeline, PaginatedResultDto<TimelineItemDto>>, GetClientTimelineHandler>();
+        services.AddScoped<IQueryHandler<GetClientEmails, PaginatedResultDto<EmailMirrorDto>>, GetClientEmailsHandler>();
 
         return services;
     }
