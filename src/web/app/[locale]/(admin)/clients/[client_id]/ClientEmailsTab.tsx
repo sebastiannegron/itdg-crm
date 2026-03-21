@@ -118,7 +118,7 @@ export default function ClientEmailsTab({
         setHasLoaded(true);
       });
     },
-    [clientId, t, startTransition],
+    [clientId, t],
   );
 
   useEffect(() => {
