@@ -38,6 +38,7 @@ public class CrmDbContext : DbContext, IApplicationDbContext
     public DbSet<DocumentVersion> DocumentVersions => Set<DocumentVersion>();
     public DbSet<DashboardLayout> DashboardLayouts => Set<DashboardLayout>();
     public DbSet<EmailMirror> EmailMirrors => Set<EmailMirror>();
+    public DbSet<ClientPortalInvitation> ClientPortalInvitations => Set<ClientPortalInvitation>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

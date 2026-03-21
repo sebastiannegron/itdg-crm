@@ -4,6 +4,7 @@ using FluentValidation;
 using Itdg.Crm.Api.Application.Commands;
 using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Queries;
+using Itdg.Crm.Api.Domain.GeneralConstants;
 using Itdg.Crm.Api.Requests;
 
 public static class PortalEndpoints
@@ -14,18 +15,18 @@ public static class PortalEndpoints
         group.WithTags("Portal");
 
         group.MapGet("/Messages", GetPortalMessagesEndpoint)
-            .RequireAuthorization(policy => policy.RequireRole("Portal.Read", "Portal.ReadWrite"))
+            .RequireAuthorization(AuthorizationPolicyNames.ClientPortal)
             .WithName("GetPortalMessages")
             .Produces<IEnumerable<MessageDto>>(StatusCodes.Status200OK);
 
         group.MapPost("/Messages", SendPortalMessageEndpoint)
-            .RequireAuthorization(policy => policy.RequireRole("Portal.ReadWrite"))
+            .RequireAuthorization(AuthorizationPolicyNames.ClientPortal)
             .WithName("SendPortalMessage")
             .Produces(StatusCodes.Status201Created)
             .ProducesValidationProblem();
 
         group.MapPut("/Messages/{message_id}/Read", MarkMessageAsReadEndpoint)
-            .RequireAuthorization(policy => policy.RequireRole("Portal.ReadWrite"))
+            .RequireAuthorization(AuthorizationPolicyNames.ClientPortal)
             .WithName("MarkMessageAsRead")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound);
