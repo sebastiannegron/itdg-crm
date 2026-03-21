@@ -30,6 +30,11 @@ import {
   type GetClientTimelineParams,
   type PaginatedTimeline,
 } from "@/server/Services/timelineService";
+import {
+  generateDraftEmail as generateDraftEmailService,
+  type DraftEmailParams,
+  type DraftEmailResponse,
+} from "@/server/Services/aiService";
 
 const tracer = trace.getTracer("web");
 
@@ -341,6 +346,40 @@ export async function fetchClientEmailsAction(
           success: true,
           message: "Emails fetched successfully",
           data: emails,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function generateAiDraftAction(
+  params: DraftEmailParams,
+): Promise<ActionResult<DraftEmailResponse>> {
+  return tracer.startActiveSpan(
+    "Generate AI Draft",
+    async (span: Span) => {
+      try {
+        span.setAttribute("client_name", params.client_name);
+        span.setAttribute("language", params.language);
+        const result = await generateDraftEmailService(params);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Draft generated successfully",
+          data: result,
         };
       } catch (err: unknown) {
         const error = err instanceof Error ? err : new Error(String(err));
