@@ -1,7 +1,6 @@
 namespace Itdg.Crm.Api.Test.Queries;
 
 using Itdg.Crm.Api.Application.Abstractions;
-using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Exceptions;
 using Itdg.Crm.Api.Application.Queries;
 using Itdg.Crm.Api.Application.QueryHandlers;
@@ -15,7 +14,6 @@ public class DownloadDocumentHandlerTests
     private readonly IDocumentRepository _documentRepository;
     private readonly IUserRepository _userRepository;
     private readonly IClientAssignmentRepository _clientAssignmentRepository;
-    private readonly IGoogleDriveService _driveService;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
     private readonly ILogger<DownloadDocumentHandler> _logger;
@@ -29,14 +27,13 @@ public class DownloadDocumentHandlerTests
         _documentRepository = Substitute.For<IDocumentRepository>();
         _userRepository = Substitute.For<IUserRepository>();
         _clientAssignmentRepository = Substitute.For<IClientAssignmentRepository>();
-        _driveService = Substitute.For<IGoogleDriveService>();
         _tokenProvider = Substitute.For<IGoogleDriveTokenProvider>();
         _currentUserProvider = Substitute.For<ICurrentUserProvider>();
         _logger = Substitute.For<ILogger<DownloadDocumentHandler>>();
 
         _handler = new DownloadDocumentHandler(
             _documentRepository, _userRepository, _clientAssignmentRepository,
-            _driveService, _tokenProvider, _currentUserProvider, _logger);
+            _tokenProvider, _currentUserProvider, _logger);
 
         // Default: Administrator
         _currentUserProvider.IsInRole(nameof(UserRole.Administrator)).Returns(true);
@@ -61,14 +58,6 @@ public class DownloadDocumentHandlerTests
                 CreatedAt = DateTimeOffset.UtcNow,
                 UpdatedAt = DateTimeOffset.UtcNow
             });
-
-        // Default Drive response
-        _driveService.ListFilesAsync(
-                Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
-                Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(new DriveFileListDto(
-                Files: [new DriveFileDto("drive-file-123", "tax-return.pdf", "application/pdf", 1024, null, null, "https://drive.google.com/file/d/drive-file-123/view", [])],
-                NextPageToken: null));
     }
 
     [Fact]
@@ -113,38 +102,6 @@ public class DownloadDocumentHandlerTests
         // Assert
         await act.Should().ThrowAsync<DomainException>()
             .Where(ex => ex.ErrorCode == "google_drive_token_unavailable");
-    }
-
-    [Fact]
-    public async Task HandleAsync_ReturnsFallbackUrl_WhenDriveListFails()
-    {
-        // Arrange
-        _driveService.ListFilesAsync(
-                Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
-                Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns<DriveFileListDto>(_ => throw new Exception("Drive API error"));
-
-        // Act
-        var result = await _handler.HandleAsync(new DownloadDocument(_documentId), Guid.NewGuid(), CancellationToken.None);
-
-        // Assert
-        result.WebViewLink.Should().Be("https://drive.google.com/file/d/drive-file-123/view");
-    }
-
-    [Fact]
-    public async Task HandleAsync_ReturnsFallbackUrl_WhenNoWebViewLinkFound()
-    {
-        // Arrange
-        _driveService.ListFilesAsync(
-                Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<string?>(),
-                Arg.Any<int>(), Arg.Any<string?>(), Arg.Any<CancellationToken>())
-            .Returns(new DriveFileListDto(Files: [], NextPageToken: null));
-
-        // Act
-        var result = await _handler.HandleAsync(new DownloadDocument(_documentId), Guid.NewGuid(), CancellationToken.None);
-
-        // Assert
-        result.WebViewLink.Should().Be("https://drive.google.com/file/d/drive-file-123/view");
     }
 
     [Fact]

@@ -14,7 +14,6 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
     private readonly IDocumentRepository _documentRepository;
     private readonly IUserRepository _userRepository;
     private readonly IClientAssignmentRepository _clientAssignmentRepository;
-    private readonly IGoogleDriveService _driveService;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
     private readonly ILogger<DownloadDocumentHandler> _logger;
@@ -23,7 +22,6 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
         IDocumentRepository documentRepository,
         IUserRepository userRepository,
         IClientAssignmentRepository clientAssignmentRepository,
-        IGoogleDriveService driveService,
         IGoogleDriveTokenProvider tokenProvider,
         ICurrentUserProvider currentUserProvider,
         ILogger<DownloadDocumentHandler> logger)
@@ -31,7 +29,6 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
         _documentRepository = documentRepository;
         _userRepository = userRepository;
         _clientAssignmentRepository = clientAssignmentRepository;
-        _driveService = driveService;
         _tokenProvider = tokenProvider;
         _currentUserProvider = currentUserProvider;
         _logger = logger;
@@ -82,28 +79,7 @@ public class DownloadDocumentHandler : IQueryHandler<DownloadDocument, DocumentD
             throw new DomainException("Google Drive access token is not available.", "google_drive_token_unavailable");
         }
 
-        string? webViewLink = null;
-        try
-        {
-            var driveFiles = await _driveService.ListFilesAsync(
-                accessToken,
-                query: $"'{document.GoogleDriveFileId}' in parents or name = '{document.FileName}'",
-                maxResults: 1,
-                cancellationToken: cancellationToken);
-
-            webViewLink = driveFiles.Files.FirstOrDefault()?.WebViewLink;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex,
-                "Failed to retrieve Google Drive web view link for document {DocumentId} | CorrelationId: {CorrelationId}",
-                query.DocumentId, correlationId);
-        }
-
-        if (string.IsNullOrWhiteSpace(webViewLink))
-        {
-            webViewLink = $"https://drive.google.com/file/d/{document.GoogleDriveFileId}/view";
-        }
+        string webViewLink = $"https://drive.google.com/file/d/{document.GoogleDriveFileId}/view";
 
         return new DocumentDownloadDto(
             DocumentId: document.Id,
