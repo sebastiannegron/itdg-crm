@@ -196,6 +196,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetClientTimeline, PaginatedResultDto<TimelineItemDto>>, GetClientTimelineHandler>();
         services.AddScoped<IQueryHandler<GetClientEmails, PaginatedResultDto<EmailMirrorDto>>, GetClientEmailsHandler>();
         services.AddScoped<IQueryHandler<GetDocumentAuditTrail, PaginatedResultDto<AuditLogDto>>, GetDocumentAuditTrailHandler>();
+        services.AddScoped<IQueryHandler<DraftEmail, string>, DraftEmailHandler>();
 
         return services;
     }
