@@ -16,6 +16,7 @@ public class GetDocumentDetailHandler : IQueryHandler<GetDocumentDetail, Documen
     private readonly IClientAssignmentRepository _clientAssignmentRepository;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly IAuditService _auditService;
     private readonly ILogger<GetDocumentDetailHandler> _logger;
 
     public GetDocumentDetailHandler(
@@ -24,6 +25,7 @@ public class GetDocumentDetailHandler : IQueryHandler<GetDocumentDetail, Documen
         IClientAssignmentRepository clientAssignmentRepository,
         IGoogleDriveTokenProvider tokenProvider,
         ICurrentUserProvider currentUserProvider,
+        IAuditService auditService,
         ILogger<GetDocumentDetailHandler> logger)
     {
         _documentRepository = documentRepository;
@@ -31,6 +33,7 @@ public class GetDocumentDetailHandler : IQueryHandler<GetDocumentDetail, Documen
         _clientAssignmentRepository = clientAssignmentRepository;
         _tokenProvider = tokenProvider;
         _currentUserProvider = currentUserProvider;
+        _auditService = auditService;
         _logger = logger;
     }
 
@@ -77,6 +80,8 @@ public class GetDocumentDetailHandler : IQueryHandler<GetDocumentDetail, Documen
         string? webViewLink = !string.IsNullOrWhiteSpace(accessToken)
             ? $"https://drive.google.com/file/d/{document.GoogleDriveFileId}/view"
             : null;
+
+        await _auditService.LogAccessAsync(nameof(Document), document.Id, "View", cancellationToken);
 
         var versionDtos = versions.Select(v => new DocumentVersionDto(
             VersionId: v.Id,

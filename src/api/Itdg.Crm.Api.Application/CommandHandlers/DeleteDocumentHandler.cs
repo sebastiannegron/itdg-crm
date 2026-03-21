@@ -10,13 +10,16 @@ using Microsoft.Extensions.Logging;
 public class DeleteDocumentHandler : ICommandHandler<DeleteDocument>
 {
     private readonly IDocumentRepository _repository;
+    private readonly IAuditService _auditService;
     private readonly ILogger<DeleteDocumentHandler> _logger;
 
     public DeleteDocumentHandler(
         IDocumentRepository repository,
+        IAuditService auditService,
         ILogger<DeleteDocumentHandler> logger)
     {
         _repository = repository;
+        _auditService = auditService;
         _logger = logger;
     }
 
@@ -34,6 +37,8 @@ public class DeleteDocumentHandler : ICommandHandler<DeleteDocument>
         document.DeletedAt = DateTimeOffset.UtcNow;
 
         await _repository.UpdateAsync(document, cancellationToken);
+
+        await _auditService.LogAccessAsync(nameof(Document), command.DocumentId, "Delete", cancellationToken);
 
         _logger.LogInformation("Document {DocumentId} soft-deleted successfully | CorrelationId: {CorrelationId}", command.DocumentId, correlationId);
     }

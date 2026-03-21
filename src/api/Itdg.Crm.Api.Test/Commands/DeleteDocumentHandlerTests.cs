@@ -1,5 +1,6 @@
 namespace Itdg.Crm.Api.Test.Commands;
 
+using Itdg.Crm.Api.Application.Abstractions;
 using Itdg.Crm.Api.Application.CommandHandlers;
 using Itdg.Crm.Api.Application.Commands;
 using Itdg.Crm.Api.Application.Exceptions;
@@ -10,14 +11,16 @@ using Microsoft.Extensions.Logging;
 public class DeleteDocumentHandlerTests
 {
     private readonly IDocumentRepository _repository;
+    private readonly IAuditService _auditService;
     private readonly ILogger<DeleteDocumentHandler> _logger;
     private readonly DeleteDocumentHandler _handler;
 
     public DeleteDocumentHandlerTests()
     {
         _repository = Substitute.For<IDocumentRepository>();
+        _auditService = Substitute.For<IAuditService>();
         _logger = Substitute.For<ILogger<DeleteDocumentHandler>>();
-        _handler = new DeleteDocumentHandler(_repository, _logger);
+        _handler = new DeleteDocumentHandler(_repository, _auditService, _logger);
     }
 
     [Fact]

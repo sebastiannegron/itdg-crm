@@ -109,6 +109,7 @@ public static class AppExtensions
         services.AddScoped<IGmailService, GmailService>();
         services.AddScoped<IGoogleDriveService, GoogleDriveService>();
         services.AddScoped<IPortalConfiguration, PortalConfiguration>();
+        services.AddScoped<IAuditService, AuditService>();
 
         // Background services
         services.AddHostedService<GmailSyncBackgroundService>();
@@ -127,6 +128,7 @@ public static class AppExtensions
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IDashboardLayoutRepository, DashboardLayoutRepository>();
         services.AddScoped<IEmailMirrorRepository, EmailMirrorRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
@@ -184,6 +186,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetPortalDocuments, PaginatedResultDto<DocumentDto>>, GetPortalDocumentsHandler>();
         services.AddScoped<IQueryHandler<GetClientTimeline, PaginatedResultDto<TimelineItemDto>>, GetClientTimelineHandler>();
         services.AddScoped<IQueryHandler<GetClientEmails, PaginatedResultDto<EmailMirrorDto>>, GetClientEmailsHandler>();
+        services.AddScoped<IQueryHandler<GetDocumentAuditTrail, PaginatedResultDto<AuditLogDto>>, GetDocumentAuditTrailHandler>();
 
         return services;
     }
