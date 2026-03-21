@@ -2,6 +2,8 @@ namespace Itdg.Crm.Api.Endpoints;
 
 using FluentValidation;
 using Itdg.Crm.Api.Application.Commands;
+using Itdg.Crm.Api.Application.Dtos;
+using Itdg.Crm.Api.Application.Queries;
 using Itdg.Crm.Api.Domain.GeneralConstants;
 using Itdg.Crm.Api.Requests;
 
@@ -12,6 +14,12 @@ public static class DocumentsEndpoints
         RouteGroupBuilder group = builder.MapGroup("/api/v1/Clients/{client_id:guid}/Documents");
         group.WithTags("Documents");
 
+        group.MapGet("", GetClientDocumentsEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetClientDocuments")
+            .Produces<PaginatedResultDto<DocumentDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         group.MapPost("", UploadDocumentEndpoint)
             .RequireAuthorization(AuthorizationPolicyNames.Associate)
             .WithName("UploadDocument")
@@ -21,7 +29,93 @@ public static class DocumentsEndpoints
             .ProducesValidationProblem()
             .DisableAntiforgery();
 
+        RouteGroupBuilder documentGroup = builder.MapGroup("/api/v1/Documents");
+        documentGroup.WithTags("Documents");
+
+        documentGroup.MapGet("/{document_id:guid}", DownloadDocumentEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("DownloadDocument")
+            .Produces<DocumentDownloadDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         return group;
+    }
+
+    private static async Task<IResult> GetClientDocumentsEndpoint(
+        Guid client_id,
+        HttpContext httpContext,
+        IQueryHandler<GetClientDocuments, PaginatedResultDto<DocumentDto>> handler,
+        CancellationToken cancellationToken,
+        int page = 1,
+        int pageSize = 20,
+        Guid? categoryId = null,
+        int? year = null,
+        string? search = null)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var query = new GetClientDocuments(client_id, page, pageSize, categoryId, year, search);
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (ForbiddenException)
+        {
+            return Results.Problem(
+                detail: "You do not have permission to access documents for this client.",
+                statusCode: StatusCodes.Status403Forbidden,
+                extensions: new Dictionary<string, object?> { { "errorCode", "forbidden" } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_client_documents_failed" } });
+        }
+    }
+
+    private static async Task<IResult> DownloadDocumentEndpoint(
+        Guid document_id,
+        HttpContext httpContext,
+        IQueryHandler<DownloadDocument, DocumentDownloadDto> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var result = await handler.HandleAsync(new DownloadDocument(document_id), Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (ForbiddenException)
+        {
+            return Results.Problem(
+                detail: "You do not have permission to access this document.",
+                statusCode: StatusCodes.Status403Forbidden,
+                extensions: new Dictionary<string, object?> { { "errorCode", "forbidden" } });
+        }
+        catch (DomainException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "download_document_failed" } });
+        }
     }
 
     private static async Task<IResult> UploadDocumentEndpoint(

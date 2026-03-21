@@ -148,6 +148,8 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetDashboardSummary, DashboardSummaryDto>, GetDashboardSummaryHandler>();
         services.AddScoped<IQueryHandler<GetDashboardLayout, DashboardLayoutDto?>, GetDashboardLayoutHandler>();
         services.AddScoped<IQueryHandler<GetDocumentCategories, IEnumerable<DocumentCategoryDto>>, GetDocumentCategoriesHandler>();
+        services.AddScoped<IQueryHandler<GetClientDocuments, PaginatedResultDto<DocumentDto>>, GetClientDocumentsHandler>();
+        services.AddScoped<IQueryHandler<DownloadDocument, DocumentDownloadDto>, DownloadDocumentHandler>();
         services.AddScoped<IQueryHandler<GetNotifications, PaginatedResultDto<NotificationDto>>, GetNotificationsHandler>();
         services.AddScoped<IQueryHandler<GetUnreadNotificationCount, int>, GetUnreadNotificationCountHandler>();
         services.AddScoped<IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>>, GetNotificationPreferencesHandler>();
