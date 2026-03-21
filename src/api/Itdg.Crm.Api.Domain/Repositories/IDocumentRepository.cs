@@ -14,4 +14,12 @@ public interface IDocumentRepository : IGenericRepository<Document>
         int? year = null,
         string? search = null,
         CancellationToken cancellationToken = default);
+    Task<Document?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<(IReadOnlyList<Document> Items, int TotalCount)> GetDeletedDocumentsPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Document>> GetDocumentsDeletedBeforeAsync(
+        DateTimeOffset cutoffDate,
+        CancellationToken cancellationToken = default);
 }

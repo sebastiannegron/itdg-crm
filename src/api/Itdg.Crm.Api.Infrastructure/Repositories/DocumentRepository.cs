@@ -63,4 +63,42 @@ public class DocumentRepository : GenericRepository<Document>, IDocumentReposito
 
         return (items, totalCount);
     }
+
+    public async Task<Document?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await Context.Set<Document>()
+            .IgnoreQueryFilters()
+            .FirstOrDefaultAsync(d => d.Id == id, cancellationToken);
+    }
+
+    public async Task<(IReadOnlyList<Document> Items, int TotalCount)> GetDeletedDocumentsPagedAsync(
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        var query = Context.Set<Document>()
+            .IgnoreQueryFilters()
+            .Include(d => d.Category)
+            .Where(d => d.DeletedAt != null);
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var items = await query
+            .OrderByDescending(d => d.DeletedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (items, totalCount);
+    }
+
+    public async Task<IReadOnlyList<Document>> GetDocumentsDeletedBeforeAsync(
+        DateTimeOffset cutoffDate,
+        CancellationToken cancellationToken = default)
+    {
+        return await Context.Set<Document>()
+            .IgnoreQueryFilters()
+            .Where(d => d.DeletedAt != null && d.DeletedAt < cutoffDate)
+            .ToListAsync(cancellationToken);
+    }
 }

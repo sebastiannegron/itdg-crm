@@ -39,6 +39,24 @@ public static class DocumentsEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
+        documentGroup.MapDelete("/{document_id:guid}", DeleteDocumentEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("DeleteDocument")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        documentGroup.MapGet("/RecycleBin", GetRecycleBinEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Administrator)
+            .WithName("GetRecycleBin")
+            .Produces<PaginatedResultDto<RecycleBinDocumentDto>>(StatusCodes.Status200OK);
+
+        documentGroup.MapPost("/{document_id:guid}/Restore", RestoreDocumentEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Administrator)
+            .WithName("RestoreDocument")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
         return group;
     }
 
@@ -196,6 +214,94 @@ public static class DocumentsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "upload_document_failed" } });
+        }
+    }
+
+    private static async Task<IResult> DeleteDocumentEndpoint(
+        Guid document_id,
+        HttpContext httpContext,
+        ICommandHandler<DeleteDocument> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
+            await handler.HandleAsync(new DeleteDocument(document_id), language, Guid.Parse(correlationId!), cancellationToken);
+            return Results.NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "delete_document_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetRecycleBinEndpoint(
+        HttpContext httpContext,
+        IQueryHandler<GetRecycleBin, PaginatedResultDto<RecycleBinDocumentDto>> handler,
+        CancellationToken cancellationToken,
+        int page = 1,
+        int pageSize = 20)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var query = new GetRecycleBin(page, pageSize);
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_recycle_bin_failed" } });
+        }
+    }
+
+    private static async Task<IResult> RestoreDocumentEndpoint(
+        Guid document_id,
+        HttpContext httpContext,
+        ICommandHandler<RestoreDocument> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            string language = httpContext.Request.Headers.AcceptLanguage.FirstOrDefault() ?? "en-pr";
+            await handler.HandleAsync(new RestoreDocument(document_id), language, Guid.Parse(correlationId!), cancellationToken);
+            return Results.NoContent();
+        }
+        catch (NotFoundException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status404NotFound,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (DomainException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "restore_document_failed" } });
         }
     }
 }
