@@ -75,6 +75,12 @@ public static class ClientsEndpoints
             .Produces<PaginatedResultDto<TimelineItemDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
+        group.MapGet("/{client_id:guid}/Emails", GetClientEmailsEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetClientEmails")
+            .Produces<PaginatedResultDto<EmailMirrorDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         return group;
     }
 
@@ -407,6 +413,38 @@ public static class ClientsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "get_client_timeline_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetClientEmailsEndpoint(
+        Guid client_id,
+        HttpContext httpContext,
+        IQueryHandler<GetClientEmails, PaginatedResultDto<EmailMirrorDto>> handler,
+        CancellationToken cancellationToken,
+        int page = 1,
+        int pageSize = 20,
+        string? search = null)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var query = new GetClientEmails(client_id, page, pageSize, search);
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (ForbiddenException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status403Forbidden,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_client_emails_failed" } });
         }
     }
 }

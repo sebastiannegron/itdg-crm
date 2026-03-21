@@ -20,6 +20,11 @@ import {
   type PaginatedDocuments,
   type DocumentDetailDto,
 } from "@/server/Services/documentService";
+import {
+  getClientEmails,
+  type GetClientEmailsParams,
+  type PaginatedEmails,
+} from "@/server/Services/emailMirrorService";
 
 const tracer = trace.getTracer("web");
 
@@ -299,6 +304,38 @@ export async function deleteDocumentAction(
         return {
           success: true,
           message: "Document deleted successfully",
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function fetchClientEmailsAction(
+  params: GetClientEmailsParams,
+): Promise<ActionResult<PaginatedEmails>> {
+  return tracer.startActiveSpan(
+    "Fetch Client Emails",
+    async (span: Span) => {
+      try {
+        const emails = await getClientEmails(params);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Emails fetched successfully",
+          data: emails,
         };
       } catch (err: unknown) {
         const error = err instanceof Error ? err : new Error(String(err));

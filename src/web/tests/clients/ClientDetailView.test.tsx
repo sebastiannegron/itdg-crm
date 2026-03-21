@@ -49,6 +49,10 @@ vi.mock(
       success: true,
       message: "Document deleted successfully",
     }),
+    fetchClientEmailsAction: vi.fn().mockResolvedValue({
+      success: true,
+      data: { items: [], total_count: 0, page: 1, page_size: 20 },
+    }),
   }),
 );
 
@@ -165,12 +169,14 @@ describe("ClientDetailView", () => {
     });
   });
 
-  it("switches to Communications tab and shows placeholder", () => {
+  it("switches to Communications tab and shows email tab", async () => {
     render(<ClientDetailView client={createClient()} />);
     fireEvent.click(screen.getByText("Communications"));
-    expect(
-      screen.getByText("Communications will be available here."),
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByPlaceholderText("Search emails\u2026"),
+      ).toBeInTheDocument();
+    });
   });
 
   it("switches to Tasks tab and shows placeholder", () => {
