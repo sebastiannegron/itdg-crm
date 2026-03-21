@@ -92,6 +92,11 @@ public static class AppExtensions
             .Bind(configuration.GetSection(GmailSyncOptions.Key))
             .ValidateDataAnnotations();
 
+        // Document purge options validation
+        services.AddOptionsWithValidateOnStart<DocumentPurgeOptions>()
+            .Bind(configuration.GetSection(DocumentPurgeOptions.Key))
+            .ValidateDataAnnotations();
+
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
         services.AddScoped<IEmailSender, NoOpEmailSender>();
@@ -101,6 +106,7 @@ public static class AppExtensions
 
         // Background services
         services.AddHostedService<GmailSyncBackgroundService>();
+        services.AddHostedService<DocumentPurgeBackgroundService>();
 
         // Repositories
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
@@ -140,6 +146,8 @@ public static class AppExtensions
         services.AddScoped<ICommandHandler<MarkAllNotificationsAsRead>, MarkAllNotificationsAsReadHandler>();
         services.AddScoped<ICommandHandler<UpdateNotificationPreferences>, UpdateNotificationPreferencesHandler>();
         services.AddScoped<ICommandHandler<UploadDocument>, UploadDocumentHandler>();
+        services.AddScoped<ICommandHandler<DeleteDocument>, DeleteDocumentHandler>();
+        services.AddScoped<ICommandHandler<RestoreDocument>, RestoreDocumentHandler>();
 
         // Query handlers
         services.AddScoped<IQueryHandler<GetClientById, ClientDto>, GetClientByIdHandler>();
@@ -158,6 +166,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetDocumentCategories, IEnumerable<DocumentCategoryDto>>, GetDocumentCategoriesHandler>();
         services.AddScoped<IQueryHandler<GetClientDocuments, PaginatedResultDto<DocumentDto>>, GetClientDocumentsHandler>();
         services.AddScoped<IQueryHandler<DownloadDocument, DocumentDownloadDto>, DownloadDocumentHandler>();
+        services.AddScoped<IQueryHandler<GetRecycleBin, PaginatedResultDto<RecycleBinDocumentDto>>, GetRecycleBinHandler>();
         services.AddScoped<IQueryHandler<GetNotifications, PaginatedResultDto<NotificationDto>>, GetNotificationsHandler>();
         services.AddScoped<IQueryHandler<GetUnreadNotificationCount, int>, GetUnreadNotificationCountHandler>();
         services.AddScoped<IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>>, GetNotificationPreferencesHandler>();
