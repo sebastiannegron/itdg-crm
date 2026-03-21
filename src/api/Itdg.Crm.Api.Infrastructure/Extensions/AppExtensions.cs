@@ -87,12 +87,20 @@ public static class AppExtensions
             .Bind(configuration.GetSection(GoogleDriveOptions.Key))
             .ValidateDataAnnotations();
 
+        // Gmail sync options validation
+        services.AddOptionsWithValidateOnStart<GmailSyncOptions>()
+            .Bind(configuration.GetSection(GmailSyncOptions.Key))
+            .ValidateDataAnnotations();
+
         // Services
         services.AddSingleton<ITemplateRenderer, TemplateRenderer>();
         services.AddScoped<IEmailSender, NoOpEmailSender>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IGmailService, GmailService>();
         services.AddScoped<IGoogleDriveService, GoogleDriveService>();
+
+        // Background services
+        services.AddHostedService<GmailSyncBackgroundService>();
 
         // Repositories
         services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
