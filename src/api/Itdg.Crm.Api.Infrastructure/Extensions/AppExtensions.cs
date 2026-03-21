@@ -126,6 +126,7 @@ public static class AppExtensions
         services.AddScoped<IDocumentRepository, DocumentRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IDashboardLayoutRepository, DashboardLayoutRepository>();
+        services.AddScoped<IEmailMirrorRepository, EmailMirrorRepository>();
 
         // Command handlers
         services.AddScoped<ICommandHandler<CreateClient>, CreateClientHandler>();
@@ -181,6 +182,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetUnreadNotificationCount, int>, GetUnreadNotificationCountHandler>();
         services.AddScoped<IQueryHandler<GetNotificationPreferences, IEnumerable<NotificationPreferenceDto>>, GetNotificationPreferencesHandler>();
         services.AddScoped<IQueryHandler<GetPortalDocuments, PaginatedResultDto<DocumentDto>>, GetPortalDocumentsHandler>();
+        services.AddScoped<IQueryHandler<GetClientTimeline, PaginatedResultDto<TimelineItemDto>>, GetClientTimelineHandler>();
 
         return services;
     }

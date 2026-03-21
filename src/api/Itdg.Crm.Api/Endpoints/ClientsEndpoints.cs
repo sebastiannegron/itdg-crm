@@ -69,6 +69,12 @@ public static class ClientsEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesValidationProblem();
 
+        group.MapGet("/{client_id:guid}/Timeline", GetClientTimelineEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetClientTimeline")
+            .Produces<PaginatedResultDto<TimelineItemDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         return group;
     }
 
@@ -370,6 +376,37 @@ public static class ClientsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "invite_client_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetClientTimelineEndpoint(
+        Guid client_id,
+        HttpContext httpContext,
+        IQueryHandler<GetClientTimeline, PaginatedResultDto<TimelineItemDto>> handler,
+        CancellationToken cancellationToken,
+        int page = 1,
+        int pageSize = 20)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var query = new GetClientTimeline(client_id, page, pageSize);
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (ForbiddenException ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status403Forbidden,
+                extensions: new Dictionary<string, object?> { { "errorCode", ex.ErrorCode } });
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_client_timeline_failed" } });
         }
     }
 }
