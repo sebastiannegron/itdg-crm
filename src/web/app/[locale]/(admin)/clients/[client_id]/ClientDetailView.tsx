@@ -39,6 +39,7 @@ import ClientAssignmentsPanel, {
   type AssociateOption,
 } from "./ClientAssignmentsPanel";
 import ClientDocumentsTab from "./ClientDocumentsTab";
+import ClientEmailsTab from "./ClientEmailsTab";
 
 function parseTierNumber(tierName: string | null): 1 | 2 | 3 | null {
   if (!tierName) return null;
@@ -477,11 +478,10 @@ export default function ClientDetailView({
         <ClientDocumentsTab clientId={client.client_id} />
       )}
 
-      {activeTab === "communications" && (
-        <EmptyState
-          icon={Mail}
-          title={t.clients_tab_communications}
-          message={t.clients_placeholder_communications}
+      {activeTab === "communications" && client && (
+        <ClientEmailsTab
+          clientId={client.client_id}
+          clientEmail={client.contact_email}
         />
       )}
 
