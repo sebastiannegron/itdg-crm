@@ -122,7 +122,7 @@ public class NotificationService : INotificationService
                 Status: notification.Status.ToString(),
                 DeliveredAt: notification.DeliveredAt,
                 ReadAt: notification.ReadAt,
-                CreatedAt: notification.DeliveredAt ?? DateTimeOffset.UtcNow
+                CreatedAt: notification.CreatedAt
             );
 
             await _hubContext.SendNotificationAsync(userId, dto, cancellationToken);

@@ -40,7 +40,7 @@ function toNotificationItem(dto: NotificationDto): NotificationItem {
     type: eventTypeMap[dto.event_type] ?? "system",
     message: dto.body,
     timestamp: new Date(dto.created_at).toLocaleString(),
-    read: dto.status === "Read",
+    read: dto.read_at !== null,
   };
 }
 
