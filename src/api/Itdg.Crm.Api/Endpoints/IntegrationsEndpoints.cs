@@ -37,6 +37,31 @@ public static class IntegrationsEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
 
+        group.MapGet("/Gmail/Auth", GetGmailAuthEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetGmailAuth")
+            .Produces(StatusCodes.Status302Found)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("/Gmail/Callback", GmailCallbackEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GmailCallback")
+            .Produces(StatusCodes.Status302Found)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapGet("/Gmail/Status", GetGmailStatusEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetGmailStatus")
+            .Produces<GmailConnectionStatusDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
+        group.MapDelete("/Gmail", DisconnectGmailEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("DisconnectGmail")
+            .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+
         return group;
     }
 
@@ -139,6 +164,108 @@ public static class IntegrationsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "google_disconnect_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetGmailAuthEndpoint(
+        HttpContext httpContext,
+        IQueryHandler<GetGmailAuthUrl, string> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var url = await handler.HandleAsync(new GetGmailAuthUrl(), Guid.Parse(correlationId!), cancellationToken);
+            return Results.Redirect(url);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "gmail_auth_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GmailCallbackEndpoint(
+        HttpContext httpContext,
+        ICommandHandler<HandleGmailCallback> handler,
+        string? code,
+        string? error,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(error))
+            {
+                return Results.Problem(
+                    detail: $"Gmail OAuth error: {error}",
+                    statusCode: StatusCodes.Status400BadRequest,
+                    extensions: new Dictionary<string, object?> { { "errorCode", "gmail_oauth_denied" } });
+            }
+
+            if (string.IsNullOrWhiteSpace(code))
+            {
+                return Results.Problem(
+                    detail: "Authorization code is required.",
+                    statusCode: StatusCodes.Status400BadRequest,
+                    extensions: new Dictionary<string, object?> { { "errorCode", "gmail_callback_missing_code" } });
+            }
+
+            var parsedCorrelationId = correlationId is not null ? Guid.Parse(correlationId) : Guid.NewGuid();
+
+            await handler.HandleAsync(new HandleGmailCallback(code), "en", parsedCorrelationId, cancellationToken);
+
+            // Redirect back to settings page after successful OAuth
+            return Results.Redirect("/settings?gmail_connected=true");
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "gmail_callback_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetGmailStatusEndpoint(
+        HttpContext httpContext,
+        IQueryHandler<GetGmailConnectionStatus, GmailConnectionStatusDto> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var status = await handler.HandleAsync(new GetGmailConnectionStatus(), Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(status);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "gmail_status_failed" } });
+        }
+    }
+
+    private static async Task<IResult> DisconnectGmailEndpoint(
+        HttpContext httpContext,
+        ICommandHandler<DisconnectGmail> handler,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            await handler.HandleAsync(new DisconnectGmail(), "en", Guid.Parse(correlationId!), cancellationToken);
+            return Results.NoContent();
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "gmail_disconnect_failed" } });
         }
     }
 }
