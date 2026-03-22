@@ -49,8 +49,6 @@ public class AzureSearchService : ISearchService
 
         SearchClient client = CreateSearchClient();
 
-        var keyDocument = new { documentId = documentId.ToString() };
-
         await client.DeleteDocumentsAsync("documentId", new[] { documentId.ToString() }, new IndexDocumentsOptions(), cancellationToken);
 
         _logger.LogInformation("Successfully removed document {DocumentId} from Azure AI Search index", documentId);

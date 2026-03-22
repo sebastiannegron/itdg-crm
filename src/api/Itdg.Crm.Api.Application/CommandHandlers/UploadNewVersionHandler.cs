@@ -132,20 +132,27 @@ public class UploadNewVersionHandler : ICommandHandler<UploadNewVersion>
         try
         {
             var client = await _clientRepository.GetByIdAsync(document.ClientId, cancellationToken);
-            var clientName = client?.Name ?? string.Empty;
-            var categoryName = document.Category?.Name ?? string.Empty;
+            var categoryName = document.Category?.Name;
 
-            var searchDocument = new SearchDocumentDto(
-                document.Id,
-                document.ClientId,
-                clientName,
-                document.FileName,
-                categoryName,
-                null,
-                document.CreatedAt
-            );
+            if (client is null || categoryName is null)
+            {
+                _logger.LogWarning("Skipping search indexing for document {DocumentId}: missing client or category data | CorrelationId: {CorrelationId}",
+                    document.Id, correlationId);
+            }
+            else
+            {
+                var searchDocument = new SearchDocumentDto(
+                    document.Id,
+                    document.ClientId,
+                    client.Name,
+                    document.FileName,
+                    categoryName,
+                    null,
+                    document.CreatedAt
+                );
 
-            await _searchService.IndexDocumentAsync(searchDocument, cancellationToken);
+                await _searchService.IndexDocumentAsync(searchDocument, cancellationToken);
+            }
         }
         catch (Exception ex)
         {
