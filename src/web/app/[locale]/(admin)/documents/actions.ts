@@ -7,6 +7,9 @@ import {
   type PaginatedDocuments,
   getDocumentDownload,
   type DocumentDownloadDto,
+  searchDocuments,
+  type SearchDocumentsParams,
+  type PaginatedSearchResults,
 } from "@/server/Services/documentService";
 import {
   getClients,
@@ -138,6 +141,38 @@ export async function fetchDocumentCategories(): Promise<
           success: true,
           message: "Categories fetched successfully",
           data: categories,
+        };
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        span.recordException(error);
+        span.setStatus({
+          code: SpanStatusCode.ERROR,
+          message: error.message,
+        });
+        return {
+          success: false,
+          message: error.message,
+        };
+      } finally {
+        span.end();
+      }
+    },
+  );
+}
+
+export async function fetchSearchDocuments(
+  params: SearchDocumentsParams,
+): Promise<ActionResult<PaginatedSearchResults>> {
+  return tracer.startActiveSpan(
+    "Search Documents",
+    async (span: Span) => {
+      try {
+        const results = await searchDocuments(params);
+        span.setStatus({ code: SpanStatusCode.OK });
+        return {
+          success: true,
+          message: "Search completed successfully",
+          data: results,
         };
       } catch (err: unknown) {
         const error = err instanceof Error ? err : new Error(String(err));

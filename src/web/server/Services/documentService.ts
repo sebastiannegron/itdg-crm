@@ -114,3 +114,57 @@ export async function deleteDocument(documentId: string): Promise<void> {
     method: "DELETE",
   });
 }
+
+export interface DocumentSearchResultDto {
+  document_id: string;
+  client_id: string;
+  client_name: string;
+  file_name: string;
+  category: string;
+  uploaded_at: string;
+  relevance_snippet: string | null;
+}
+
+export interface PaginatedSearchResults {
+  items: DocumentSearchResultDto[];
+  total_count: number;
+  page: number;
+  page_size: number;
+}
+
+export interface SearchDocumentsParams {
+  query: string;
+  clientId?: string;
+  category?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: number;
+  pageSize?: number;
+}
+
+export async function searchDocuments(
+  params: SearchDocumentsParams,
+): Promise<PaginatedSearchResults> {
+  const searchParams = new URLSearchParams();
+
+  if (params.page) searchParams.set("page", String(params.page));
+  if (params.pageSize) searchParams.set("pageSize", String(params.pageSize));
+
+  const queryString = searchParams.toString();
+  const path = `/api/v1/Documents/Search${queryString ? `?${queryString}` : ""}`;
+
+  const body: Record<string, unknown> = {
+    query: params.query,
+  };
+
+  if (params.clientId) body.client_id = params.clientId;
+  if (params.category) body.category = params.category;
+  if (params.dateFrom) body.date_from = params.dateFrom;
+  if (params.dateTo) body.date_to = params.dateTo;
+
+  return apiFetch<PaginatedSearchResults>(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "application/json" },
+  });
+}
