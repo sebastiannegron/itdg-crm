@@ -87,6 +87,11 @@ public static class AppExtensions
             .Bind(configuration.GetSection(GoogleDriveOptions.Key))
             .ValidateDataAnnotations();
 
+        // Google Calendar options validation
+        services.AddOptionsWithValidateOnStart<GoogleCalendarOptions>()
+            .Bind(configuration.GetSection(GoogleCalendarOptions.Key))
+            .ValidateDataAnnotations();
+
         // Gmail sync options validation
         services.AddOptionsWithValidateOnStart<GmailSyncOptions>()
             .Bind(configuration.GetSection(GmailSyncOptions.Key))
@@ -136,6 +141,7 @@ public static class AppExtensions
         services.AddScoped<IAiDraftingService, AzureOpenAiDraftingService>();
         services.AddSingleton<ITokenEncryptionService, AesTokenEncryptionService>();
         services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
+        services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
 
         // Background services
         services.AddHostedService<GmailSyncBackgroundService>();
