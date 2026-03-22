@@ -15,6 +15,7 @@ import {
   Eye,
   FolderTree,
   Files,
+  Search,
 } from "lucide-react";
 import { PageHeader } from "@/app/_components/PageHeader";
 import { EmptyState } from "@/app/_components/EmptyState";
@@ -38,6 +39,7 @@ import {
   fetchClientDocuments,
   fetchDocumentDownload,
 } from "./actions";
+import DocumentSearchPanel from "./DocumentSearchPanel";
 
 function FileIcon({ mimeType }: { mimeType: string }) {
   const iconType = getMimeTypeIcon(mimeType);
@@ -188,6 +190,7 @@ export default function DocumentsView({
   const [searchQuery, setSearchQuery] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
   const [mobileTab, setMobileTab] = useState<"explorer" | "files">("explorer");
+  const [showSearch, setShowSearch] = useState(false);
 
   // Build tree
   const tree = useMemo(() => buildTree(clients, categories), [clients, categories]);
@@ -567,64 +570,91 @@ export default function DocumentsView({
 
   return (
     <div className="space-y-4">
-      <PageHeader
-        title={t.documents_title}
-        breadcrumbs={[
-          { label: t.nav_dashboard, href: "/dashboard" },
-          { label: t.documents_title },
-        ]}
-      />
-
-      {/* Mobile tabs */}
-      <div className="md:hidden flex rounded-lg border overflow-hidden">
-        <button
-          type="button"
-          className={`flex-1 py-2 text-sm font-medium transition-colors ${
-            mobileTab === "explorer"
-              ? "bg-slate-800 text-white"
-              : "bg-background text-foreground"
-          }`}
-          onClick={() => setMobileTab("explorer")}
+      <div className="flex items-center justify-between">
+        <PageHeader
+          title={t.documents_title}
+          breadcrumbs={[
+            { label: t.nav_dashboard, href: "/dashboard" },
+            { label: t.documents_title },
+          ]}
+        />
+        <Button
+          variant={showSearch ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowSearch((prev) => !prev)}
+          aria-expanded={showSearch}
         >
-          <FolderTree className="inline-block mr-1.5 h-3.5 w-3.5" />
-          {t.documents_explorer}
-        </button>
-        <button
-          type="button"
-          className={`flex-1 py-2 text-sm font-medium transition-colors ${
-            mobileTab === "files"
-              ? "bg-slate-800 text-white"
-              : "bg-background text-foreground"
-          }`}
-          onClick={() => setMobileTab("files")}
-        >
-          <Files className="inline-block mr-1.5 h-3.5 w-3.5" />
-          {t.documents_files}
-        </button>
+          <Search className="mr-1.5 h-3.5 w-3.5" />
+          {t.documents_search_title}
+        </Button>
       </div>
 
-      {/* Desktop layout: side-by-side */}
-      <div className="hidden md:grid md:grid-cols-[280px_1fr] gap-4">
-        <Card className="h-[calc(100vh-200px)] overflow-hidden">
-          <CardContent className="p-0 h-full">{explorerContent}</CardContent>
-        </Card>
-        <Card className="h-[calc(100vh-200px)] overflow-hidden">
-          <CardContent className="p-0 h-full">{filesContent}</CardContent>
-        </Card>
-      </div>
+      {/* Search panel */}
+      {showSearch && (
+        <div className="h-[calc(100vh-200px)]">
+          <DocumentSearchPanel
+            clients={clients}
+            categories={categories}
+            onClose={() => setShowSearch(false)}
+          />
+        </div>
+      )}
 
-      {/* Mobile layout: tabbed */}
-      <div className="md:hidden">
-        {mobileTab === "explorer" ? (
-          <Card className="h-[calc(100vh-240px)] overflow-hidden">
-            <CardContent className="p-0 h-full">{explorerContent}</CardContent>
-          </Card>
-        ) : (
-          <Card className="h-[calc(100vh-240px)] overflow-hidden">
-            <CardContent className="p-0 h-full">{filesContent}</CardContent>
-          </Card>
-        )}
-      </div>
+      {/* Main content (hidden when search is open) */}
+      {!showSearch && (
+        <>
+          {/* Mobile tabs */}
+          <div className="md:hidden flex rounded-lg border overflow-hidden">
+            <button
+              type="button"
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                mobileTab === "explorer"
+                  ? "bg-slate-800 text-white"
+                  : "bg-background text-foreground"
+              }`}
+              onClick={() => setMobileTab("explorer")}
+            >
+              <FolderTree className="inline-block mr-1.5 h-3.5 w-3.5" />
+              {t.documents_explorer}
+            </button>
+            <button
+              type="button"
+              className={`flex-1 py-2 text-sm font-medium transition-colors ${
+                mobileTab === "files"
+                  ? "bg-slate-800 text-white"
+                  : "bg-background text-foreground"
+              }`}
+              onClick={() => setMobileTab("files")}
+            >
+              <Files className="inline-block mr-1.5 h-3.5 w-3.5" />
+              {t.documents_files}
+            </button>
+          </div>
+
+          {/* Desktop layout: side-by-side */}
+          <div className="hidden md:grid md:grid-cols-[280px_1fr] gap-4">
+            <Card className="h-[calc(100vh-200px)] overflow-hidden">
+              <CardContent className="p-0 h-full">{explorerContent}</CardContent>
+            </Card>
+            <Card className="h-[calc(100vh-200px)] overflow-hidden">
+              <CardContent className="p-0 h-full">{filesContent}</CardContent>
+            </Card>
+          </div>
+
+          {/* Mobile layout: tabbed */}
+          <div className="md:hidden">
+            {mobileTab === "explorer" ? (
+              <Card className="h-[calc(100vh-240px)] overflow-hidden">
+                <CardContent className="p-0 h-full">{explorerContent}</CardContent>
+              </Card>
+            ) : (
+              <Card className="h-[calc(100vh-240px)] overflow-hidden">
+                <CardContent className="p-0 h-full">{filesContent}</CardContent>
+              </Card>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
