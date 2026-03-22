@@ -24,6 +24,23 @@ public class HealthEndpointsTests : IClassFixture<WebApplicationFactory<Program>
                     ["Gmail:ClientSecret"] = "test-client-secret",
                     ["GoogleDrive:ClientId"] = "test-client-id",
                     ["GoogleDrive:ClientSecret"] = "test-client-secret",
+                    ["GoogleCalendar:ClientId"] = "test-client-id",
+                    ["GoogleCalendar:ClientSecret"] = "test-client-secret",
+                    ["Portal:BaseUrl"] = "https://test.example.com",
+                    ["AzureOpenAi:Endpoint"] = "https://test.openai.azure.com",
+                    ["AzureOpenAi:ApiKey"] = "test-api-key",
+                    ["AzureOpenAi:DeploymentName"] = "test-deployment",
+                    ["MicrosoftGraphEmail:TenantId"] = "00000000-0000-0000-0000-000000000000",
+                    ["MicrosoftGraphEmail:ClientId"] = "00000000-0000-0000-0000-000000000000",
+                    ["MicrosoftGraphEmail:ClientSecret"] = "test-client-secret",
+                    ["MicrosoftGraphEmail:SenderAddress"] = "test@example.com",
+                    ["GoogleOAuth:ClientId"] = "test-client-id",
+                    ["GoogleOAuth:ClientSecret"] = "test-client-secret",
+                    ["GoogleOAuth:RedirectUri"] = "https://test.example.com/callback",
+                    ["AzureAiSearch:Endpoint"] = "https://test.search.windows.net",
+                    ["AzureAiSearch:ApiKey"] = "test-api-key",
+                    ["AzureAiSearch:IndexName"] = "test-index",
+                    ["TokenEncryption:EncryptionKey"] = "dGVzdC1lbmNyeXB0aW9uLWtleS0xMjM0NTY3ODkwMTI=",
                 });
             });
 
