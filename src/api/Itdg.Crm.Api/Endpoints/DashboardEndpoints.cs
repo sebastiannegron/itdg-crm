@@ -162,10 +162,11 @@ public static class DashboardEndpoints
         {
             var startDate = start_date ?? DateTimeOffset.UtcNow.Date;
             var endDate = end_date ?? startDate.AddDays(30);
+            var parsedCorrelationId = correlationId is not null ? Guid.Parse(correlationId) : Guid.NewGuid();
 
             var result = await handler.HandleAsync(
                 new GetDashboardCalendar(startDate, endDate),
-                Guid.Parse(correlationId!),
+                parsedCorrelationId,
                 cancellationToken);
             return Results.Ok(result);
         }

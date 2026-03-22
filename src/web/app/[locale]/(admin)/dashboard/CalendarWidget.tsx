@@ -255,8 +255,8 @@ export default function CalendarWidget({
               return (
                 <div
                   key={day.toISOString()}
-                  className={`min-h-[120px] bg-background p-2 first:rounded-tl-lg last:rounded-tr-lg ${
-                    today ? "bg-blue-50/50" : ""
+                  className={`min-h-[120px] p-2 first:rounded-tl-lg last:rounded-tr-lg ${
+                    today ? "bg-blue-50/50" : "bg-background"
                   }`}
                 >
                   <div
