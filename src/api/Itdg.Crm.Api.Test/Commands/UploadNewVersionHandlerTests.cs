@@ -13,9 +13,11 @@ public class UploadNewVersionHandlerTests
 {
     private readonly IDocumentRepository _documentRepository;
     private readonly IGenericRepository<DocumentVersion> _versionRepository;
+    private readonly IGenericRepository<Client> _clientRepository;
     private readonly IGoogleDriveService _driveService;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly ISearchService _searchService;
     private readonly ILogger<UploadNewVersionHandler> _logger;
     private readonly UploadNewVersionHandler _handler;
     private readonly Guid _documentId = Guid.NewGuid();
@@ -27,13 +29,18 @@ public class UploadNewVersionHandlerTests
     {
         _documentRepository = Substitute.For<IDocumentRepository>();
         _versionRepository = Substitute.For<IGenericRepository<DocumentVersion>>();
+        _clientRepository = Substitute.For<IGenericRepository<Client>>();
         _driveService = Substitute.For<IGoogleDriveService>();
         _tokenProvider = Substitute.For<IGoogleDriveTokenProvider>();
         _currentUserProvider = Substitute.For<ICurrentUserProvider>();
+        _searchService = Substitute.For<ISearchService>();
         _logger = Substitute.For<ILogger<UploadNewVersionHandler>>();
 
         _currentUserProvider.GetEntraObjectId().Returns(_userId.ToString());
         _tokenProvider.GetAccessToken().Returns("test-access-token");
+
+        _clientRepository.GetByIdAsync(_clientId, Arg.Any<CancellationToken>())
+            .Returns(new Client { Id = _clientId, Name = "Test Client", TenantId = Guid.NewGuid() });
 
         _documentRepository.GetByIdWithCategoryAsync(_documentId, Arg.Any<CancellationToken>())
             .Returns(new Document
@@ -58,8 +65,8 @@ public class UploadNewVersionHandlerTests
             .Returns(new DriveFileDto("drive-file-new", "tax-return.pdf", "application/pdf", 2048, null, null, null, []));
 
         _handler = new UploadNewVersionHandler(
-            _documentRepository, _versionRepository, _driveService,
-            _tokenProvider, _currentUserProvider, _logger);
+            _documentRepository, _versionRepository, _clientRepository, _driveService,
+            _tokenProvider, _currentUserProvider, _searchService, _logger);
     }
 
     private UploadNewVersion CreateValidCommand(Stream? stream = null)

@@ -19,6 +19,7 @@ public class UploadDocumentHandlerTests
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ITenantProvider _tenantProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly ISearchService _searchService;
     private readonly ILogger<UploadDocumentHandler> _logger;
     private readonly UploadDocumentHandler _handler;
     private readonly Guid _tenantId = Guid.NewGuid();
@@ -36,6 +37,7 @@ public class UploadDocumentHandlerTests
         _tokenProvider = Substitute.For<IGoogleDriveTokenProvider>();
         _tenantProvider = Substitute.For<ITenantProvider>();
         _currentUserProvider = Substitute.For<ICurrentUserProvider>();
+        _searchService = Substitute.For<ISearchService>();
         _logger = Substitute.For<ILogger<UploadDocumentHandler>>();
 
         _tenantProvider.GetTenantId().Returns(_tenantId);
@@ -54,7 +56,7 @@ public class UploadDocumentHandlerTests
 
         _handler = new UploadDocumentHandler(
             _documentRepository, _versionRepository, _categoryRepository, _clientRepository,
-            _driveService, _tokenProvider, _tenantProvider, _currentUserProvider, _logger);
+            _driveService, _tokenProvider, _tenantProvider, _currentUserProvider, _searchService, _logger);
     }
 
     private UploadDocument CreateValidCommand(Stream? stream = null)

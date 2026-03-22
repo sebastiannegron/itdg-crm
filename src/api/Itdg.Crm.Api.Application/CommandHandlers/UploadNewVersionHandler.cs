@@ -2,6 +2,7 @@ namespace Itdg.Crm.Api.Application.CommandHandlers;
 
 using Itdg.Crm.Api.Application.Abstractions;
 using Itdg.Crm.Api.Application.Commands;
+using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Exceptions;
 using Itdg.Crm.Api.Diagnostics;
 using Itdg.Crm.Api.Domain.Repositories;
@@ -30,24 +31,30 @@ public class UploadNewVersionHandler : ICommandHandler<UploadNewVersion>
 
     private readonly IDocumentRepository _documentRepository;
     private readonly IGenericRepository<DocumentVersion> _versionRepository;
+    private readonly IGenericRepository<Client> _clientRepository;
     private readonly IGoogleDriveService _driveService;
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly ISearchService _searchService;
     private readonly ILogger<UploadNewVersionHandler> _logger;
 
     public UploadNewVersionHandler(
         IDocumentRepository documentRepository,
         IGenericRepository<DocumentVersion> versionRepository,
+        IGenericRepository<Client> clientRepository,
         IGoogleDriveService driveService,
         IGoogleDriveTokenProvider tokenProvider,
         ICurrentUserProvider currentUserProvider,
+        ISearchService searchService,
         ILogger<UploadNewVersionHandler> logger)
     {
         _documentRepository = documentRepository;
         _versionRepository = versionRepository;
+        _clientRepository = clientRepository;
         _driveService = driveService;
         _tokenProvider = tokenProvider;
         _currentUserProvider = currentUserProvider;
+        _searchService = searchService;
         _logger = logger;
     }
 
@@ -120,6 +127,38 @@ public class UploadNewVersionHandler : ICommandHandler<UploadNewVersion>
         document.MimeType = command.ContentType;
 
         await _documentRepository.UpdateAsync(document, cancellationToken);
+
+        // Re-index document in Azure AI Search
+        try
+        {
+            var client = await _clientRepository.GetByIdAsync(document.ClientId, cancellationToken);
+            var categoryName = document.Category?.Name;
+
+            if (client is null || categoryName is null)
+            {
+                _logger.LogWarning("Skipping search indexing for document {DocumentId}: missing client or category data | CorrelationId: {CorrelationId}",
+                    document.Id, correlationId);
+            }
+            else
+            {
+                var searchDocument = new SearchDocumentDto(
+                    document.Id,
+                    document.ClientId,
+                    client.Name,
+                    document.FileName,
+                    categoryName,
+                    null,
+                    document.CreatedAt
+                );
+
+                await _searchService.IndexDocumentAsync(searchDocument, cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to re-index document {DocumentId} in search. Document was updated successfully | CorrelationId: {CorrelationId}",
+                document.Id, correlationId);
+        }
 
         _logger.LogInformation("Document {DocumentId} updated to version {VersionNumber} | CorrelationId: {CorrelationId}",
             document.Id, newVersionNumber, correlationId);
