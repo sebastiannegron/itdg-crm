@@ -43,3 +43,34 @@ export function getGmailAuthUrl(): string {
   const apiBase = process.env.API_BASE_URL ?? "http://localhost:5000";
   return `${apiBase}/api/v1/Integrations/Gmail/Auth`;
 }
+
+export interface CalendarConnectionStatusDto {
+  is_connected: boolean;
+  connected_at: string | null;
+}
+
+export async function getCalendarConnectionStatus(): Promise<CalendarConnectionStatusDto> {
+  return apiFetch<CalendarConnectionStatusDto>(
+    "/api/v1/Integrations/Calendar/Status",
+  );
+}
+
+export interface MsGraphConnectionStatusDto {
+  is_configured: boolean;
+}
+
+export async function getMsGraphConnectionStatus(): Promise<MsGraphConnectionStatusDto> {
+  return apiFetch<MsGraphConnectionStatusDto>(
+    "/api/v1/Integrations/MsGraph/Status",
+  );
+}
+
+export interface AzureOpenAiConnectionStatusDto {
+  is_configured: boolean;
+}
+
+export async function getAzureOpenAiConnectionStatus(): Promise<AzureOpenAiConnectionStatusDto> {
+  return apiFetch<AzureOpenAiConnectionStatusDto>(
+    "/api/v1/Integrations/AzureOpenAi/Status",
+  );
+}

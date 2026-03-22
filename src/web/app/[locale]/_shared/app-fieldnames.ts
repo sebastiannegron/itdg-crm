@@ -408,6 +408,49 @@ export const fieldnames = {
     settings_gmail_disconnect_error:
       "Failed to disconnect Gmail. Please try again.",
     settings_gmail_not_connected: "Not connected",
+    settings_integrations_title: "Integrations",
+    settings_integrations_subtitle:
+      "Manage third-party service connections for your organization.",
+    settings_integrations_connected: "Connected",
+    settings_integrations_not_connected: "Not connected",
+    settings_integrations_connected_at: "Connected on",
+    settings_integrations_last_sync: "Last sync",
+    settings_integrations_connect: "Connect",
+    settings_integrations_connecting: "Connecting…",
+    settings_integrations_disconnect: "Disconnect",
+    settings_integrations_disconnecting: "Disconnecting…",
+    settings_integrations_disconnect_confirm:
+      "Are you sure you want to disconnect this integration?",
+    settings_integrations_connect_success: "Integration connected successfully.",
+    settings_integrations_connect_error:
+      "Failed to connect integration. Please try again.",
+    settings_integrations_disconnect_success:
+      "Integration disconnected successfully.",
+    settings_integrations_disconnect_error:
+      "Failed to disconnect integration. Please try again.",
+    settings_integrations_google_workspace: "Google Workspace",
+    settings_integrations_google_workspace_description:
+      "Gmail, Calendar, and Drive integration for email, scheduling, and document storage.",
+    settings_integrations_gmail: "Gmail",
+    settings_integrations_gmail_description:
+      "View and manage email exchanges with clients.",
+    settings_integrations_calendar: "Google Calendar",
+    settings_integrations_calendar_description:
+      "Sync appointments and schedule client meetings.",
+    settings_integrations_drive: "Google Drive",
+    settings_integrations_drive_description:
+      "Store and manage client documents in the cloud.",
+    settings_integrations_ms_graph: "Microsoft Graph",
+    settings_integrations_ms_graph_description:
+      "Email delivery via Microsoft 365 for outbound communications.",
+    settings_integrations_azure_openai: "Azure OpenAI",
+    settings_integrations_azure_openai_description:
+      "AI-powered email drafting and document analysis.",
+    settings_integrations_configured: "Configured",
+    settings_integrations_not_configured: "Not configured",
+    settings_integrations_system_service: "System service",
+    settings_integrations_system_service_description:
+      "This integration is configured at the system level.",
   },
   "es-pr": {
     app_name: "R&A Plataforma CRM",
@@ -820,6 +863,50 @@ export const fieldnames = {
     settings_gmail_disconnect_error:
       "Error al desconectar Gmail. Inténtelo de nuevo.",
     settings_gmail_not_connected: "No conectado",
+    settings_integrations_title: "Integraciones",
+    settings_integrations_subtitle:
+      "Administre las conexiones de servicios de terceros para su organización.",
+    settings_integrations_connected: "Conectado",
+    settings_integrations_not_connected: "No conectado",
+    settings_integrations_connected_at: "Conectado el",
+    settings_integrations_last_sync: "Última sincronización",
+    settings_integrations_connect: "Conectar",
+    settings_integrations_connecting: "Conectando…",
+    settings_integrations_disconnect: "Desconectar",
+    settings_integrations_disconnecting: "Desconectando…",
+    settings_integrations_disconnect_confirm:
+      "¿Está seguro de que desea desconectar esta integración?",
+    settings_integrations_connect_success:
+      "Integración conectada exitosamente.",
+    settings_integrations_connect_error:
+      "Error al conectar la integración. Inténtelo de nuevo.",
+    settings_integrations_disconnect_success:
+      "Integración desconectada exitosamente.",
+    settings_integrations_disconnect_error:
+      "Error al desconectar la integración. Inténtelo de nuevo.",
+    settings_integrations_google_workspace: "Google Workspace",
+    settings_integrations_google_workspace_description:
+      "Integración de Gmail, Calendar y Drive para correo, horarios y almacenamiento de documentos.",
+    settings_integrations_gmail: "Gmail",
+    settings_integrations_gmail_description:
+      "Ver y gestionar intercambios de correo con clientes.",
+    settings_integrations_calendar: "Google Calendar",
+    settings_integrations_calendar_description:
+      "Sincronice citas y programe reuniones con clientes.",
+    settings_integrations_drive: "Google Drive",
+    settings_integrations_drive_description:
+      "Almacene y gestione documentos de clientes en la nube.",
+    settings_integrations_ms_graph: "Microsoft Graph",
+    settings_integrations_ms_graph_description:
+      "Entrega de correo a través de Microsoft 365 para comunicaciones salientes.",
+    settings_integrations_azure_openai: "Azure OpenAI",
+    settings_integrations_azure_openai_description:
+      "Redacción de correos y análisis de documentos impulsados por IA.",
+    settings_integrations_configured: "Configurado",
+    settings_integrations_not_configured: "No configurado",
+    settings_integrations_system_service: "Servicio del sistema",
+    settings_integrations_system_service_description:
+      "Esta integración está configurada a nivel del sistema.",
   },
 } as const;
 
