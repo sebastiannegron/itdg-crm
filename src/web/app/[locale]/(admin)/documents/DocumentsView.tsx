@@ -582,6 +582,7 @@ export default function DocumentsView({
           variant={showSearch ? "default" : "outline"}
           size="sm"
           onClick={() => setShowSearch((prev) => !prev)}
+          aria-expanded={showSearch}
         >
           <Search className="mr-1.5 h-3.5 w-3.5" />
           {t.documents_search_title}

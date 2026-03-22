@@ -18,6 +18,12 @@ import type {
 import { formatDate } from "./shared";
 import { fetchSearchDocuments } from "./actions";
 
+function sanitizeSnippet(html: string): string {
+  return html
+    .replace(/<(?!\/?em>)[^>]*>/gi, "")
+    .replace(/&(?!amp;|lt;|gt;|quot;|#\d+;)/g, "&amp;");
+}
+
 interface DocumentSearchPanelProps {
   clients: ClientDto[];
   categories: DocumentCategoryDto[];
@@ -222,7 +228,7 @@ export default function DocumentSearchPanel({
                           {doc.relevance_snippet && (
                             <p
                               className="text-xs text-muted-foreground mt-1.5 line-clamp-2"
-                              dangerouslySetInnerHTML={{ __html: doc.relevance_snippet }}
+                              dangerouslySetInnerHTML={{ __html: sanitizeSnippet(doc.relevance_snippet) }}
                             />
                           )}
                         </div>
