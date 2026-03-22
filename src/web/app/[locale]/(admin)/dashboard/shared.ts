@@ -1,6 +1,16 @@
 import type { DashboardSummaryDto } from "@/server/Services/dashboardService";
+import type {
+  DashboardCalendarDto,
+  DashboardCalendarEventDto,
+  CalendarTeamMemberDto,
+} from "@/server/Services/dashboardService";
 
-export type { DashboardSummaryDto };
+export type {
+  DashboardSummaryDto,
+  DashboardCalendarDto,
+  DashboardCalendarEventDto,
+  CalendarTeamMemberDto,
+};
 
 export interface TaskItem {
   id: string;

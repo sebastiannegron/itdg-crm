@@ -33,3 +33,39 @@ export async function getHealthStatus(): Promise<HealthStatusDto> {
 export async function getDashboardSummary(): Promise<DashboardSummaryDto> {
   return apiFetch<DashboardSummaryDto>("/api/v1/Dashboard/Summary");
 }
+
+export interface CalendarTeamMemberDto {
+  name: string;
+  color: string;
+}
+
+export interface DashboardCalendarEventDto {
+  id: string;
+  summary: string | null;
+  description: string | null;
+  location: string | null;
+  start: string | null;
+  end: string | null;
+  calendar_id: string;
+  html_link: string | null;
+  status: string | null;
+  organizer_email: string | null;
+  created: string | null;
+  updated: string | null;
+  team_member_name: string;
+  team_member_color: string;
+}
+
+export interface DashboardCalendarDto {
+  events: DashboardCalendarEventDto[];
+  team_members: CalendarTeamMemberDto[];
+}
+
+export async function getDashboardCalendar(
+  startDate: string,
+  endDate: string,
+): Promise<DashboardCalendarDto> {
+  return apiFetch<DashboardCalendarDto>(
+    `/api/v1/Dashboard/Calendar?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`,
+  );
+}
