@@ -2,6 +2,7 @@ namespace Itdg.Crm.Api.Application.CommandHandlers;
 
 using Itdg.Crm.Api.Application.Abstractions;
 using Itdg.Crm.Api.Application.Commands;
+using Itdg.Crm.Api.Application.Dtos;
 using Itdg.Crm.Api.Application.Exceptions;
 using Itdg.Crm.Api.Diagnostics;
 using Itdg.Crm.Api.Domain.Repositories;
@@ -36,6 +37,7 @@ public class UploadDocumentHandler : ICommandHandler<UploadDocument>
     private readonly IGoogleDriveTokenProvider _tokenProvider;
     private readonly ITenantProvider _tenantProvider;
     private readonly ICurrentUserProvider _currentUserProvider;
+    private readonly ISearchService _searchService;
     private readonly ILogger<UploadDocumentHandler> _logger;
 
     public UploadDocumentHandler(
@@ -47,6 +49,7 @@ public class UploadDocumentHandler : ICommandHandler<UploadDocument>
         IGoogleDriveTokenProvider tokenProvider,
         ITenantProvider tenantProvider,
         ICurrentUserProvider currentUserProvider,
+        ISearchService searchService,
         ILogger<UploadDocumentHandler> logger)
     {
         _documentRepository = documentRepository;
@@ -57,6 +60,7 @@ public class UploadDocumentHandler : ICommandHandler<UploadDocument>
         _tokenProvider = tokenProvider;
         _tenantProvider = tenantProvider;
         _currentUserProvider = currentUserProvider;
+        _searchService = searchService;
         _logger = logger;
     }
 
@@ -143,6 +147,27 @@ public class UploadDocumentHandler : ICommandHandler<UploadDocument>
         };
 
         await _versionRepository.AddAsync(version, cancellationToken);
+
+        // Index document in Azure AI Search
+        try
+        {
+            var searchDocument = new SearchDocumentDto(
+                document.Id,
+                document.ClientId,
+                client.Name,
+                document.FileName,
+                category.Name,
+                null,
+                document.CreatedAt
+            );
+
+            await _searchService.IndexDocumentAsync(searchDocument, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to index document {DocumentId} in search. Document was saved successfully | CorrelationId: {CorrelationId}",
+                document.Id, correlationId);
+        }
 
         _logger.LogInformation("Document {DocumentId} created with version 1 for client {ClientId} | CorrelationId: {CorrelationId}",
             document.Id, command.ClientId, correlationId);

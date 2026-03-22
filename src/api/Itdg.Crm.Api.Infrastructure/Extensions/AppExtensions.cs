@@ -122,6 +122,11 @@ public static class AppExtensions
             .Bind(configuration.GetSection(GoogleOAuthOptions.Key))
             .ValidateDataAnnotations();
 
+        // Azure AI Search options validation
+        services.AddOptionsWithValidateOnStart<AzureSearchOptions>()
+            .Bind(configuration.GetSection(AzureSearchOptions.Key))
+            .ValidateDataAnnotations();
+
         // Token encryption options validation
         services.AddOptionsWithValidateOnStart<TokenEncryptionOptions>()
             .Bind(configuration.GetSection(TokenEncryptionOptions.Key))
@@ -139,6 +144,7 @@ public static class AppExtensions
         services.AddScoped<IPortalConfiguration, PortalConfiguration>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IAiDraftingService, AzureOpenAiDraftingService>();
+        services.AddScoped<ISearchService, AzureSearchService>();
         services.AddSingleton<ITokenEncryptionService, AesTokenEncryptionService>();
         services.AddScoped<IGoogleOAuthService, GoogleOAuthService>();
         services.AddScoped<IGoogleCalendarService, GoogleCalendarService>();
