@@ -31,6 +31,11 @@ public static class DashboardEndpoints
             .Produces(StatusCodes.Status204NoContent)
             .ProducesValidationProblem();
 
+        group.MapGet("/Calendar", GetDashboardCalendarEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("GetDashboardCalendar")
+            .Produces<DashboardCalendarDto>(StatusCodes.Status200OK);
+
         return group;
     }
 
@@ -142,6 +147,35 @@ public static class DashboardEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "save_dashboard_layout_failed" } });
+        }
+    }
+
+    private static async Task<IResult> GetDashboardCalendarEndpoint(
+        HttpContext httpContext,
+        IQueryHandler<GetDashboardCalendar, DashboardCalendarDto> handler,
+        DateTimeOffset? start_date,
+        DateTimeOffset? end_date,
+        CancellationToken cancellationToken)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var startDate = start_date ?? DateTimeOffset.UtcNow.Date;
+            var endDate = end_date ?? startDate.AddDays(30);
+            var parsedCorrelationId = correlationId is not null ? Guid.Parse(correlationId) : Guid.NewGuid();
+
+            var result = await handler.HandleAsync(
+                new GetDashboardCalendar(startDate, endDate),
+                parsedCorrelationId,
+                cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "get_dashboard_calendar_failed" } });
         }
     }
 }

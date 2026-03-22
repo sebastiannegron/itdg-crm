@@ -212,6 +212,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetClientAssignments, IEnumerable<ClientAssignmentDto>>, GetClientAssignmentsHandler>();
         services.AddScoped<IQueryHandler<GetDashboardSummary, DashboardSummaryDto>, GetDashboardSummaryHandler>();
         services.AddScoped<IQueryHandler<GetDashboardLayout, DashboardLayoutDto?>, GetDashboardLayoutHandler>();
+        services.AddScoped<IQueryHandler<GetDashboardCalendar, DashboardCalendarDto>, GetDashboardCalendarHandler>();
         services.AddScoped<IQueryHandler<GetDocumentCategories, IEnumerable<DocumentCategoryDto>>, GetDocumentCategoriesHandler>();
         services.AddScoped<IQueryHandler<GetClientDocuments, PaginatedResultDto<DocumentDto>>, GetClientDocumentsHandler>();
         services.AddScoped<IQueryHandler<DownloadDocument, DocumentDownloadDto>, DownloadDocumentHandler>();

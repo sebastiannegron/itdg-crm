@@ -22,17 +22,20 @@ import { fieldnames, type Locale } from "@/app/[locale]/_shared/app-fieldnames";
 import type { PageStatus } from "@/app/[locale]/_shared/app-enums";
 import type {
   DashboardSummaryDto,
+  DashboardCalendarDto,
   TaskItem,
   EscalationItem,
   DeadlineItem,
 } from "./shared";
 import { getDashboardSummaryAction } from "./actions";
+import CalendarWidget from "./CalendarWidget";
 
 interface DashboardViewProps {
   initialSummary: DashboardSummaryDto | null;
   initialTasks: TaskItem[];
   initialEscalations: EscalationItem[];
   initialDeadlines: DeadlineItem[];
+  initialCalendar: DashboardCalendarDto | null;
 }
 
 export default function DashboardView({
@@ -40,6 +43,7 @@ export default function DashboardView({
   initialTasks,
   initialEscalations,
   initialDeadlines,
+  initialCalendar,
 }: DashboardViewProps) {
   const locale = useLocale() as Locale;
   const t = fieldnames[locale];
@@ -267,6 +271,9 @@ export default function DashboardView({
           </Card>
         </div>
       </div>
+
+      {/* Calendar Widget — full width below the main content */}
+      <CalendarWidget initialCalendar={initialCalendar} />
     </div>
   );
 }

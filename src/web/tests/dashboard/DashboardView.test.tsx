@@ -44,6 +44,11 @@ vi.mock("@/app/[locale]/(admin)/dashboard/actions", () => ({
       unread_notifications_count: 0,
     },
   }),
+  getDashboardCalendarAction: vi.fn().mockResolvedValue({
+    success: true,
+    message: "Dashboard calendar fetched successfully",
+    data: { events: [], team_members: [] },
+  }),
 }));
 
 import DashboardView from "@/app/[locale]/(admin)/dashboard/DashboardView";
@@ -121,6 +126,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
     expect(
@@ -135,6 +141,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
     expect(
@@ -155,6 +162,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -175,6 +183,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -189,6 +198,7 @@ describe("DashboardView", () => {
         initialTasks={sampleTasks}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -206,6 +216,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -219,6 +230,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={sampleEscalations}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -235,6 +247,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -248,6 +261,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={sampleDeadlines}
+        initialCalendar={null}
       />,
     );
 
@@ -264,6 +278,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -277,6 +292,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -290,6 +306,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -303,6 +320,7 @@ describe("DashboardView", () => {
         initialTasks={[]}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
@@ -321,6 +339,7 @@ describe("DashboardView", () => {
         initialTasks={sampleTasks}
         initialEscalations={[]}
         initialDeadlines={[]}
+        initialCalendar={null}
       />,
     );
 
