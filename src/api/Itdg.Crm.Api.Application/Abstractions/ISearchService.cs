@@ -9,4 +9,14 @@ public interface ISearchService
     Task RemoveDocumentAsync(Guid documentId, CancellationToken cancellationToken);
 
     Task<IReadOnlyList<SearchDocumentDto>> SearchDocumentsAsync(string query, CancellationToken cancellationToken);
+
+    Task<(IReadOnlyList<DocumentSearchResultDto> Items, int TotalCount)> SearchDocumentsAsync(
+        string query,
+        Guid? clientId,
+        string? category,
+        DateTimeOffset? dateFrom,
+        DateTimeOffset? dateTo,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken);
 }

@@ -83,6 +83,103 @@ public class AzureSearchService : ISearchService
         return documents;
     }
 
+    public async Task<(IReadOnlyList<DocumentSearchResultDto> Items, int TotalCount)> SearchDocumentsAsync(
+        string query,
+        Guid? clientId,
+        string? category,
+        DateTimeOffset? dateFrom,
+        DateTimeOffset? dateTo,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken)
+    {
+        using Activity? activity = DiagnosticsConfig.ActivitySource.StartActivity("Search Documents With Filters");
+        activity?.SetTag("Query", query);
+
+        _logger.LogInformation("Searching documents with query: {Query}, filters: clientId={ClientId}, category={Category}", query, clientId, category);
+
+        SearchClient client = CreateSearchClient();
+
+        SearchOptions searchOptions = new()
+        {
+            IncludeTotalCount = true,
+            Skip = (page - 1) * pageSize,
+            Size = pageSize,
+            Select = { "documentId", "clientId", "clientName", "fileName", "category", "content", "uploadedAt" },
+            HighlightFields = { "content" },
+            HighlightPreTag = "<em>",
+            HighlightPostTag = "</em>"
+        };
+
+        string? filter = BuildFilter(clientId, category, dateFrom, dateTo);
+        if (filter is not null)
+        {
+            searchOptions.Filter = filter;
+        }
+
+        SearchResults<SearchIndexDocument> results = await client.SearchAsync<SearchIndexDocument>(query, searchOptions, cancellationToken);
+
+        List<DocumentSearchResultDto> documents = [];
+
+        await foreach (SearchResult<SearchIndexDocument> result in results.GetResultsAsync())
+        {
+            string? snippet = null;
+            if (result.Highlights is not null && result.Highlights.TryGetValue("content", out var highlights) && highlights.Count > 0)
+            {
+                snippet = string.Join(" … ", highlights);
+            }
+            else if (!string.IsNullOrEmpty(result.Document.Content))
+            {
+                snippet = result.Document.Content.Length > 200
+                    ? result.Document.Content[..200] + "…"
+                    : result.Document.Content;
+            }
+
+            documents.Add(new DocumentSearchResultDto(
+                DocumentId: Guid.Parse(result.Document.DocumentId),
+                ClientId: Guid.Parse(result.Document.ClientId),
+                ClientName: result.Document.ClientName,
+                FileName: result.Document.FileName,
+                Category: result.Document.Category,
+                UploadedAt: result.Document.UploadedAt,
+                RelevanceSnippet: snippet
+            ));
+        }
+
+        int totalCount = (int)(results.TotalCount ?? documents.Count);
+
+        _logger.LogInformation("Search returned {Count} of {Total} documents for query: {Query}", documents.Count, totalCount, query);
+
+        return (documents, totalCount);
+    }
+
+    internal static string? BuildFilter(Guid? clientId, string? category, DateTimeOffset? dateFrom, DateTimeOffset? dateTo)
+    {
+        List<string> filters = [];
+
+        if (clientId.HasValue)
+        {
+            filters.Add($"clientId eq '{clientId.Value}'");
+        }
+
+        if (!string.IsNullOrWhiteSpace(category))
+        {
+            filters.Add($"category eq '{category.Replace("'", "''")}'");
+        }
+
+        if (dateFrom.HasValue)
+        {
+            filters.Add($"uploadedAt ge {dateFrom.Value:O}");
+        }
+
+        if (dateTo.HasValue)
+        {
+            filters.Add($"uploadedAt le {dateTo.Value:O}");
+        }
+
+        return filters.Count > 0 ? string.Join(" and ", filters) : null;
+    }
+
     internal SearchClient CreateSearchClient()
     {
         return new SearchClient(

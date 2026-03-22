@@ -231,6 +231,7 @@ public static class AppExtensions
         services.AddScoped<IQueryHandler<GetClientTimeline, PaginatedResultDto<TimelineItemDto>>, GetClientTimelineHandler>();
         services.AddScoped<IQueryHandler<GetClientEmails, PaginatedResultDto<EmailMirrorDto>>, GetClientEmailsHandler>();
         services.AddScoped<IQueryHandler<GetDocumentAuditTrail, PaginatedResultDto<AuditLogDto>>, GetDocumentAuditTrailHandler>();
+        services.AddScoped<IQueryHandler<SearchDocuments, PaginatedResultDto<DocumentSearchResultDto>>, SearchDocumentsHandler>();
         services.AddScoped<IQueryHandler<DraftEmail, string>, DraftEmailHandler>();
         services.AddScoped<IQueryHandler<GetGoogleAuthUrl, string>, GetGoogleAuthUrlHandler>();
         services.AddScoped<IQueryHandler<GetGoogleConnectionStatus, GoogleConnectionStatusDto>, GetGoogleConnectionStatusHandler>();

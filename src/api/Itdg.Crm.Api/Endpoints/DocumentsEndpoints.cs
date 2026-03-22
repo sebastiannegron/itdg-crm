@@ -78,6 +78,12 @@ public static class DocumentsEndpoints
             .Produces<PaginatedResultDto<AuditLogDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        documentGroup.MapPost("/Search", SearchDocumentsEndpoint)
+            .RequireAuthorization(AuthorizationPolicyNames.Associate)
+            .WithName("SearchDocuments")
+            .Produces<PaginatedResultDto<DocumentSearchResultDto>>(StatusCodes.Status200OK)
+            .ProducesValidationProblem();
+
         return group;
     }
 
@@ -445,6 +451,45 @@ public static class DocumentsEndpoints
                 detail: ex.Message,
                 statusCode: StatusCodes.Status500InternalServerError,
                 extensions: new Dictionary<string, object?> { { "errorCode", "get_document_audit_trail_failed" } });
+        }
+    }
+
+    private static async Task<IResult> SearchDocumentsEndpoint(
+        HttpContext httpContext,
+        IQueryHandler<SearchDocuments, PaginatedResultDto<DocumentSearchResultDto>> handler,
+        IValidator<SearchDocumentsRequest> validator,
+        SearchDocumentsRequest request,
+        CancellationToken cancellationToken,
+        int page = 1,
+        int pageSize = 20)
+    {
+        string? correlationId = httpContext.Request.Headers["X-Correlation-Id"];
+        try
+        {
+            var validationResult = await validator.ValidateAsync(request, cancellationToken);
+            if (!validationResult.IsValid)
+            {
+                return Results.ValidationProblem(validationResult.ToDictionary());
+            }
+
+            var query = new SearchDocuments(
+                Query: request.Query,
+                ClientId: request.ClientId,
+                Category: request.Category,
+                DateFrom: request.DateFrom,
+                DateTo: request.DateTo,
+                Page: page,
+                PageSize: pageSize);
+
+            var result = await handler.HandleAsync(query, Guid.Parse(correlationId!), cancellationToken);
+            return Results.Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError,
+                extensions: new Dictionary<string, object?> { { "errorCode", "search_documents_failed" } });
         }
     }
 }
