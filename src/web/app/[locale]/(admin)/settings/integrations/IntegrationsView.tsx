@@ -79,11 +79,10 @@ export default function IntegrationsView({
     useState<GoogleConnectionStatusDto>(initialGoogleDrive);
   const [gmail, setGmail] =
     useState<GmailConnectionStatusDto>(initialGmail);
-  const [calendar] =
-    useState<CalendarConnectionStatusDto>(initialCalendar);
-  const [msGraph] = useState<MsGraphConnectionStatusDto>(initialMsGraph);
-  const [azureOpenAi] =
-    useState<AzureOpenAiConnectionStatusDto>(initialAzureOpenAi);
+
+  const calendar = initialCalendar;
+  const msGraph = initialMsGraph;
+  const azureOpenAi = initialAzureOpenAi;
 
   const [status, setStatus] = useState<PageStatus>("idle");
   const [message, setMessage] = useState("");
